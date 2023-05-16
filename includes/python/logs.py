@@ -2,6 +2,10 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.models import Variable
 import logging 
 
+
+#direcionamento do log
+task_logger = logging.getLogger("airflow.task")
+
 #postgres_conn_id é a conexão registrada no adm do webserver (admin>connections)
 #Variable.get('p3m-conn') conexão do DB foi registrada como uma variável no adm do webserver (admin>variables) permitindo interoperabilidade
 #hook é utilizado para permitir acesso ao DB via python operator pelas funções individualmente
@@ -18,9 +22,9 @@ def log_inativos():
             where tp."IDTipoRequerimento" is null;'''
     cursor.execute(query_inat)
     rows = cursor.fetchall()
-    logging.info('Processos inativos:')
+    task_logger.info('Processos inativos:')
     for row in rows:
-        logging.info('Processo: {0}'.format(row[0]))
+        task_logger.info('Processo: {0}'.format(row[0]))
 
 #Função com query retorna os números dos processos duplicados
 def log_duplicados():
@@ -30,9 +34,9 @@ def log_duplicados():
 	                having count(*) > 1;'''
     cursor.execute(query_dupli)
     rows = cursor.fetchall()
-    logging.info('Processos duplicados:')
+    task_logger.info('Processos duplicados:')
     for row in rows:
-        logging.info('Processo: {0}'.format(row[0]))
+        task_logger.info('Processo: {0}'.format(row[0]))
 
 #Função com as querys que retornam os números dos processos com problemas geometria
 #Query_geom1 processos com geometrias inválidas
@@ -43,15 +47,15 @@ def log_geom():
                    where st_isvalid(fp."SHAPE") is false;'''
     cursor.execute(query_geom1)
     rows = cursor.fetchall()
-    logging.info('Problemas de geometria')
-    logging.info('Geometria inválida:')
+    task_logger.info('Problemas de geometria')
+    task_logger.info('Geometria inválida:')
     for row in rows:
-        logging.info('Processo: {0}'.format(row[0]))
+        task_logger.info('Processo: {0}'.format(row[0]))
     query_geom2='''select fpa."DSProcesso"
                     from etl."FC_ProcessoAtivo" fpa
                     where st_ndims(fpa."SHAPE") != 2;'''
     cursor.execute(query_geom2)
     rows = cursor.fetchall()
-    logging.info('Coordenada z:')
+    task_logger.info('Coordenada z:')
     for row in rows:
-        logging.info('Processo: {0}'.format(row[0]))
+        task_logger.info('Processo: {0}'.format(row[0]))
