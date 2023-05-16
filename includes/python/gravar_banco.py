@@ -1,7 +1,7 @@
 import subprocess
 import logging
 from airflow.hooks.base import BaseHook
-
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 LAYERS = [
     "TB_Processo",
     "TB_ProcessoPessoa",
@@ -13,7 +13,18 @@ LAYERS = [
 ]
 
 task_logger = logging.getLogger("airflow.task")
+#def gravar_banco(temp_dir,pg_id):
 
+#   pg_hook=PostgresHook(postgres_conn_id=pg_id)
+#    conn=pg_hook.get_conn()
+
+#    !!!!VOLTAR A AVALIAR!!!
+#    Não é possível acessar os parâmetros como no basehook
+#    dbname = conn.get_dsn_parameters()['dbname']
+#    host = conn.get_dsn_parameters()['host']
+#    password = conn.get_dsn_parameters()['']
+#    user = conn.get_dsn_parameters()['user']
+#    port = conn.get_dsn_parameters()['port']
 def gravar_banco(temp_dir):
 
     conn = BaseHook.get_connection("p3m_etl_db")
@@ -23,7 +34,7 @@ def gravar_banco(temp_dir):
     password = conn.password
     user = conn.login
     port = conn.port
-    active_schema = "etl"    
+    active_schema = "etl"#Substituir o nome do schema onde serão processados e salvo os dados    
 
     for layer in LAYERS:
         result = subprocess.run(

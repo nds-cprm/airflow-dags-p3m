@@ -17,7 +17,7 @@ from airflow.models import Variable
 
 #Definição da DAG
 etl_dag = DAG (
-        'etl_dag', 
+        'p3m_etl', 
         default_args = {
         "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
         "email_on_failure": False
@@ -33,7 +33,7 @@ etl_dag = DAG (
 #Variable.get('d_folder') variavel que tem valor da conexão do tipo file(path) para pasta de download dos arquivos
 #Para implementação definir em Webserver admin>connections e admin>variables
 criar_dir = PythonOperator (
-    task_id = 'criar_dir',
+    task_id = 'p3m_etl_criar_dir',
     python_callable = create_get_dir,
     op_args=[Variable.get('d_folder')],
     dag=etl_dag)
@@ -42,14 +42,14 @@ criar_dir = PythonOperator (
 #Variable.get('url_data') contém o endereço do serviço de acesso ao arquivo gdb
 #Para implementação definir em Webserver admin>variables
 consumo_dados = PythonOperator(
-    task_id = 'consumo_dados',
+    task_id = 'p3m_etl_consumo_dados',
     python_callable = consumir_dado,
     op_args=[Variable.get('url_data'),Variable.get('d_folder')],#substituir as variáveis e o valores pelas criadas pelo usuário no UI
     dag=etl_dag)
 
 # Task que extrai os arquivos do zip na pasta temporaria
 descompactar = PythonOperator(
-    task_id='descompactar',
+    task_id='p3m_etl_descompactar',
     python_callable=_descompactar,
     op_args=[Variable.get('d_folder')],
     dag=etl_dag
@@ -64,24 +64,24 @@ descompactar = PythonOperator(
 
 # ATUALIZADO: bash command transformado em Python
 gravar_dados = PythonOperator(
-    task_id = 'gravar_dados',
+    task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
     op_args=[Variable.get('d_folder')],
     dag=etl_dag)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
 inativos_log =PythonOperator(
-    task_id='inativos_log',
+    task_id='p3m_etl_inativos_log',
     python_callable=log_inativos,
     dag=etl_dag)
 
 duplicados_log =PythonOperator(
-    task_id='duplicados_log',
+    task_id='p3m_etl_duplicados_log',
     python_callable=log_duplicados,
     dag=etl_dag)
 
 geom_log =PythonOperator(
-    task_id='geom_log',
+    task_id='p3m_etl_geom_log',
     python_callable=log_geom,
     dag=etl_dag)
 
@@ -90,57 +90,57 @@ geom_log =PythonOperator(
 #postgres_conn_id é a conexão registrada no adm do webserver (admin>connections)
 #Variable.get('p3m-conn') conexão do DB foi registrada como uma variável no adm do webserver (admin>variables) permitindo interoperabilidade
 remover_inativos = PostgresOperator(
-    task_id = 'remover_inativos',
+    task_id = 'p3m_etl_remover_inativos',
     postgres_conn_id = Variable.get('p3m_conn'),#Substituir pela variavel criada na UI e replicar nas demais tasks
     sql="includes/sql/remov_inat.sql",
     dag=etl_dag)
 
 remover_duplicados= PostgresOperator(
-    task_id='remover_duplicados',
+    task_id='p3m_etl_remover_duplicados',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql="includes/sql/remov_dupli.sql",
     dag=etl_dag)
 
 corrigir_geom = PostgresOperator(
-    task_id='corrigir_geom',
+    task_id='p3m_etl_corrigir_geom',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql= "includes/sql/corrigir_geom.sql",
     dag=etl_dag)
 
 vacuum = PostgresOperator(
-    task_id='vacuum_atl',
+    task_id='p3m_etl_vacuum_atl',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql= "includes/sql/vacuum.sql",
     autocommit=True,
     dag=etl_dag)
 
 atualizar_index = PostgresOperator(
-    task_id='reindex',
+    task_id='p3m_etl_reindex',
     postgres_conn_id= Variable.get('p3m_conn'),
     sql="includes/sql/reindex.sql",
     dag=etl_dag)
 
 atualizar_mvwcadastro=PostgresOperator(
-    task_id='atualizar_mvwcadastro',
+    task_id='p3m_etl_atualizar_mvwcadastro',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql="includes/sql/atualizar_mvwcadastro.sql",
     dag=etl_dag)
 
 atualizar_mvwevt=PostgresOperator(
-    task_id='atualizar_mvwevt',
+    task_id='p3m_etl_atualizar_mvwevt',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql="includes/sql/atualizar_mvwevt.sql",
     dag=etl_dag)
 
 atualizar_mvwpma=PostgresOperator(
-    task_id='atualizar_mvwpma',
+    task_id='p3m_etl_atualizar_mvwpma',
     postgres_conn_id = Variable.get('p3m_conn'),
     sql="includes/sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
 #Task de construção da pasta de backup dos gdbs de cada run
 mk_backup=PythonOperator(
-    task_id='backup',
+    task_id='p3m_etl_backup',
     python_callable=make_backup,
     op_args=[ Variable.get('bkp_folder')],#Substituir pela variavel da pasta de backup criada na UI
     dag=etl_dag
