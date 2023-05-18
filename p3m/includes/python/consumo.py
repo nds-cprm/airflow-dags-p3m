@@ -1,6 +1,6 @@
 import requests
 import logging
-from includes.python.utils import create_get_dir
+from .utils import create_get_dir
 
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
