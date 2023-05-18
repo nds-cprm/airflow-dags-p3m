@@ -6,12 +6,12 @@ from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
-from includes.python.utils import create_get_dir
-from includes.python.consumo import consumir_dado
-from includes.python.logs import log_inativos,log_duplicados,log_geom
-from includes.python.gravar_banco import gravar_banco
-from includes.python.descompactar import descompactar as _descompactar
-from includes.python.backup import make_backup
+from p3m.includes.python.utils import create_get_dir
+from p3m.includes.python.consumo import consumir_dado
+from p3m.includes.python.logs import log_inativos,log_duplicados,log_geom
+from p3m.includes.python.gravar_banco import gravar_banco
+from p3m.includes.python.descompactar import descompactar as _descompactar
+from p3m.includes.python.backup import make_backup
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
@@ -22,8 +22,8 @@ etl_dag = DAG (
         "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
         "email_on_failure": False
         },
-        start_date = datetime(2023,3,30),#Ajustar em produção
-        schedule_interval = '0 20 * * *',#Ajustar em produção
+        start_date = datetime(2023, 5, 17),#Ajustar em produção
+        schedule_interval = None, # '0 20 * * *',#Ajustar em produção
         catchup = False )
 
 #Definição das tasks que compõem a dag
@@ -92,50 +92,50 @@ geom_log =PythonOperator(
 remover_inativos = PostgresOperator(
     task_id = 'p3m_etl_remover_inativos',
     postgres_conn_id = Variable.get('p3m_conn'),#Substituir pela variavel criada na UI e replicar nas demais tasks
-    sql="includes/sql/remov_inat.sql",
+    sql="sql/remov_inat.sql",
     dag=etl_dag)
 
 remover_duplicados= PostgresOperator(
     task_id='p3m_etl_remover_duplicados',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql="includes/sql/remov_dupli.sql",
+    sql="sql/remov_dupli.sql",
     dag=etl_dag)
 
 corrigir_geom = PostgresOperator(
     task_id='p3m_etl_corrigir_geom',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql= "includes/sql/corrigir_geom.sql",
+    sql= "sql/corrigir_geom.sql",
     dag=etl_dag)
 
 vacuum = PostgresOperator(
     task_id='p3m_etl_vacuum_atl',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql= "includes/sql/vacuum.sql",
+    sql= "sql/vacuum.sql",
     autocommit=True,
     dag=etl_dag)
 
 atualizar_index = PostgresOperator(
     task_id='p3m_etl_reindex',
     postgres_conn_id= Variable.get('p3m_conn'),
-    sql="includes/sql/reindex.sql",
+    sql="sql/reindex.sql",
     dag=etl_dag)
 
 atualizar_mvwcadastro=PostgresOperator(
     task_id='p3m_etl_atualizar_mvwcadastro',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql="includes/sql/atualizar_mvwcadastro.sql",
+    sql="sql/atualizar_mvwcadastro.sql",
     dag=etl_dag)
 
 atualizar_mvwevt=PostgresOperator(
     task_id='p3m_etl_atualizar_mvwevt',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql="includes/sql/atualizar_mvwevt.sql",
+    sql="sql/atualizar_mvwevt.sql",
     dag=etl_dag)
 
 atualizar_mvwpma=PostgresOperator(
     task_id='p3m_etl_atualizar_mvwpma',
     postgres_conn_id = Variable.get('p3m_conn'),
-    sql="includes/sql/atualizar_mvwpma.sql",
+    sql="sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
 #Task de construção da pasta de backup dos gdbs de cada run

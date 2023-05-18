@@ -9,9 +9,8 @@ task_logger = logging.getLogger("airflow.task")
 #postgres_conn_id é a conexão registrada no adm do webserver (admin>connections)
 #Variable.get('p3m-conn') conexão do DB foi registrada como uma variável no adm do webserver (admin>variables) permitindo interoperabilidade
 #hook é utilizado para permitir acesso ao DB via python operator pelas funções individualmente
-pg_hook=PostgresHook(postgres_conn_id=Variable.get('p3m_conn'))
-conn=pg_hook.get_conn()
-cursor=conn.cursor()
+conn = PostgresHook(postgres_conn_id=Variable.get('p3m_conn')).get_conn()
+cursor = conn.cursor()
 
 #Funções de construção dos logs para as funções de tratamento da base no BD
 #Função com query retorna os números dos processos do que estão inativos
@@ -29,7 +28,7 @@ def log_inativos():
 #Função com query retorna os números dos processos duplicados
 def log_duplicados():
     query_dupli='''select fp."DSProcesso", fp."QTAreaHA", fp."SHAPE"
-	                from etl."FC_ProcessoAtivo"fp
+	                from etl."FC_ProcessoAtivo" fp
 	                group by fp."DSProcesso", fp."QTAreaHA", fp."SHAPE"  
 	                having count(*) > 1;'''
     cursor.execute(query_dupli)
