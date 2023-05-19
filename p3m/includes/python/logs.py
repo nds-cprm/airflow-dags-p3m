@@ -16,8 +16,8 @@ cursor = conn.cursor()
 #Função com query retorna os números dos processos do que estão inativos
 def log_inativos():
     query_inat='''select fp."DSProcesso" 
-            from etl."FC_ProcessoAtivo" fp 
-            left join etl."TB_Processo" tp on fp."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S' 
+            from anm."FC_ProcessoAtivo" fp 
+            left join anm."TB_Processo" tp on fp."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S' 
             where tp."IDTipoRequerimento" is null;'''
     cursor.execute(query_inat)
     rows = cursor.fetchall()
@@ -28,7 +28,7 @@ def log_inativos():
 #Função com query retorna os números dos processos duplicados
 def log_duplicados():
     query_dupli='''select fp."DSProcesso", fp."QTAreaHA", fp."SHAPE"
-	                from etl."FC_ProcessoAtivo" fp
+	                from anm."FC_ProcessoAtivo" fp
 	                group by fp."DSProcesso", fp."QTAreaHA", fp."SHAPE"  
 	                having count(*) > 1;'''
     cursor.execute(query_dupli)
@@ -42,7 +42,7 @@ def log_duplicados():
 #Query_geom2 processos com geometrias com coordenadas z
 def log_geom():
     query_geom1='''select (fp."DSProcesso"), st_isvalidreason(fp."SHAPE")
-                   from etl."FC_ProcessoAtivo" fp 
+                   from anm."FC_ProcessoAtivo" fp 
                    where st_isvalid(fp."SHAPE") is false;'''
     cursor.execute(query_geom1)
     rows = cursor.fetchall()
@@ -51,7 +51,7 @@ def log_geom():
     for row in rows:
         task_logger.info('Processo: {0}'.format(row[0]))
     query_geom2='''select fpa."DSProcesso"
-                    from etl."FC_ProcessoAtivo" fpa
+                    from anm."FC_ProcessoAtivo" fpa
                     where st_ndims(fpa."SHAPE") != 2;'''
     cursor.execute(query_geom2)
     rows = cursor.fetchall()
