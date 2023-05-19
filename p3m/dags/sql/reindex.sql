@@ -5,7 +5,7 @@
 do $$
 declare
 	r record;
-	sch_name varchar := 'etl';--substituir nome do schema
+	sch_name varchar := 'anm';--substituir nome do schema
 begin
 	for r in (select t.table_name from information_schema."tables" t where t.table_schema =sch_name)
 	loop

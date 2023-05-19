@@ -4,9 +4,9 @@
 -- uma vez que deveria ser preenchido em caso de correspondecia com filtro de ativos
 --posteriormente são deletados aquele com valor nulo
 
-delete from etl."FC_ProcessoAtivo" fp2 
+delete from anm."FC_ProcessoAtivo" fp2 
 using (select fp."DSProcesso"
-		from etl."FC_ProcessoAtivo" fp
-		left join etl."TB_Processo" tp on fp."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S'
+		from anm."FC_ProcessoAtivo" fp
+		left join anm."TB_Processo" tp on fp."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S'
 		where tp."IDTipoRequerimento" is null) as subquery
 where subquery."DSProcesso" = fp2."DSProcesso";
