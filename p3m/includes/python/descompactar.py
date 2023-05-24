@@ -1,8 +1,5 @@
-import zipfile
 import subprocess
 import logging
-import os
-from .utils import create_get_dir
 
 
 task_logger = logging.getLogger("airflow.task")
