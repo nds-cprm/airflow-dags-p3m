@@ -13,7 +13,9 @@ LAYERS = [
     "TB_ProcessoMunicipio",
     "TB_Pessoa",
     "TB_ProcessoSubstancia",
-    "FC_ProcessoAtivo"
+    "FC_ProcessoAtivo",
+    "FC_Disponibilidade",
+    "FC_Arrendamento"
 ]
 
 task_logger = logging.getLogger("airflow.task")

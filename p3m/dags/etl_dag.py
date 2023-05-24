@@ -24,18 +24,8 @@ etl_dag = DAG (
         catchup = False )
 
 #Definição das tasks que compõem a dag
-#Chama o .py importado como módulo referente a cada task
-
-#Task que cria o diretorío automático do download caso necessário
-#Variable.get('d_folder') variavel que tem valor da conexão do tipo file(path) para pasta de download dos arquivos
-#Para implementação definir em Webserver admin>connections e admin>variables
-#criar_dir = PythonOperator (
-#    task_id = 'p3m_etl_criar_dir',
-#    python_callable = create_get_dir,
-#    op_args=[Variable.get('d_folder')],
-#    dag=etl_dag)
-
 #Task que fazer o download e extrai os arquivos do zip na pasta da task anterior
+#Variable.get('d_folder') variavel que tem valor da conexão do tipo file(path) para pasta de download dos arquivos
 #Variable.get('url_data') contém o endereço do serviço de acesso ao arquivo gdb
 #Para implementação definir em Webserver admin>variables
 consumo_dados = PythonOperator(
@@ -57,6 +47,13 @@ gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
     op_args=[Variable.get('d_folder')],
+    dag=etl_dag)
+
+#Task responsável por construir a tabela de apoio com a junção de todas as FC's
+montar_tabela= PostgresOperator(
+    task_id='p3m_etl_montar_tabela',
+    postgres_conn_id=Variable.get('p3m_conn'),
+    sql="sql/montar_tabela.sql",
     dag=etl_dag)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
@@ -136,4 +133,4 @@ atl_cards=PostgresOperator(
     dag=etl_dag)
 
 
-consumo_dados>>descompactar>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+consumo_dados>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
