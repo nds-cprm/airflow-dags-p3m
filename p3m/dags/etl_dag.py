@@ -1,17 +1,14 @@
 from datetime import datetime
 #Operatos padrão
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
 #importando módulo do postgresoperator através do provider Postgres
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
-from p3m.includes.python.utils import create_get_dir
 from p3m.includes.python.consumo import consumir_dado
 from p3m.includes.python.logs import log_inativos,log_duplicados,log_geom
 from p3m.includes.python.gravar_banco import gravar_banco
 from p3m.includes.python.descompactar import descompactar as _descompactar
-from p3m.includes.python.backup import make_backup
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
@@ -27,18 +24,8 @@ etl_dag = DAG (
         catchup = False )
 
 #Definição das tasks que compõem a dag
-#Chama o .py importado como módulo referente a cada task
-
-#Task que cria o diretorío automático do download caso necessário
-#Variable.get('d_folder') variavel que tem valor da conexão do tipo file(path) para pasta de download dos arquivos
-#Para implementação definir em Webserver admin>connections e admin>variables
-criar_dir = PythonOperator (
-    task_id = 'p3m_etl_criar_dir',
-    python_callable = create_get_dir,
-    op_args=[Variable.get('d_folder')],
-    dag=etl_dag)
-
 #Task que fazer o download e extrai os arquivos do zip na pasta da task anterior
+#Variable.get('d_folder') variavel que tem valor da conexão do tipo file(path) para pasta de download dos arquivos
 #Variable.get('url_data') contém o endereço do serviço de acesso ao arquivo gdb
 #Para implementação definir em Webserver admin>variables
 consumo_dados = PythonOperator(
@@ -55,18 +42,18 @@ descompactar = PythonOperator(
     dag=etl_dag
 )
 
-#Task que grava a base de dados no BD
-#Bash_command é o caminho relativo .sh de execução
-#gravar_dados = BashOperator(
-#    task_id = 'gravar_dados',
-#    bash_command="includes/bash/gravar_db.sh",
-#    dag=etl_dag)
-
-# ATUALIZADO: bash command transformado em Python
+# Task para salvar os dados no banco de dados
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
     op_args=[Variable.get('d_folder')],
+    dag=etl_dag)
+
+#Task responsável por construir a tabela de apoio com a junção de todas as FC's
+montar_tabela= PostgresOperator(
+    task_id='p3m_etl_montar_tabela',
+    postgres_conn_id=Variable.get('p3m_conn'),
+    sql="sql/montar_tabela.sql",
     dag=etl_dag)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
@@ -138,14 +125,12 @@ atualizar_mvwpma=PostgresOperator(
     sql="sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
-#Task de construção da pasta de backup dos gdbs de cada run
-mk_backup=PythonOperator(
-    task_id='p3m_etl_backup',
-    python_callable=make_backup,
-    op_args=[ Variable.get('bkp_folder')],#Substituir pela variavel da pasta de backup criada na UI
-    dag=etl_dag
-)
+#Task para atualização da Data nos cards do dashboard
+atl_cards=PostgresOperator(
+    task_id='p3m_atualizar_cards',
+    postgres_conn_id=Variable.get('p3m_conn'),
+    sql="sql/atl_cards.sql",
+    dag=etl_dag)
 
 
-
-criar_dir>>consumo_dados>>descompactar>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>mk_backup # type: ignore
+consumo_dados>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
