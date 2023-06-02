@@ -13,7 +13,9 @@ LAYERS = [
     "TB_ProcessoMunicipio",
     "TB_Pessoa",
     "TB_ProcessoSubstancia",
-    "FC_ProcessoAtivo"
+    "FC_ProcessoAtivo",
+    "FC_Disponibilidade",
+    "FC_Arrendamento"
 ]
 
 task_logger = logging.getLogger("airflow.task")
@@ -38,7 +40,7 @@ def gravar_banco(temp_dir):
     password = conn.password
     user = conn.login
     port = conn.port
-    active_schema = "etl" #Substituir o nome do schema onde serão processados e salvo os dados    
+    active_schema = "anm" #Substituir o nome do schema onde serão processados e salvo os dados    
 
     for layer in LAYERS:
         # TODO: Trocar por PyGDAL -> Conflita versões de python
