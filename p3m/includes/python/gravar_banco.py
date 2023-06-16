@@ -2,6 +2,8 @@ import subprocess
 import logging
 import sys
 
+from os import path
+
 from airflow.hooks.base import BaseHook
 
 
@@ -30,7 +32,7 @@ def gravar_banco(bd_conn, ti, **kwargs):
     port = conn.port
     active_schema = "anm" #Substituir o nome do schema onde serão processados e salvo os dados
 
-    gdb = ti.xcom_pull(key='a_path')
+    gdb = path.join(ti.xcom_pull(key='a_path'), "DBANM.gdb.zip")
 
     for layer in LAYERS:
         # TODO: Trocar por PyGDAL -> Conflita versões de python
@@ -60,5 +62,5 @@ def gravar_banco(bd_conn, ti, **kwargs):
             sys.exit(-1) #type:ignore
 
         task_logger.info(result.stdout)
-        
+
     return 0
