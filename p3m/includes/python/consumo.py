@@ -1,7 +1,10 @@
 import requests
 import logging
+import sys
+
 from os import path,makedirs
 from datetime import date
+
 
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
@@ -34,6 +37,6 @@ def consumir_dado(url, temp_dir, ti):
         else:
             task_logger.error('Arquivo não-baixado')
             task_logger.error(f'Status: {response.status_code}')
-            exit(-1)
+            sys.exit(-1)
 
   
