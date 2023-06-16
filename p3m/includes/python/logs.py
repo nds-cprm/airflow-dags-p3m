@@ -1,20 +1,17 @@
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.models import Variable
 import logging 
 
 
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
 
-#postgres_conn_id é a conexão registrada no adm do webserver (admin>connections)
-#Variable.get('p3m-conn') conexão do DB foi registrada como uma variável no adm do webserver (admin>variables) permitindo interoperabilidade
 #hook é utilizado para permitir acesso ao DB via python operator pelas funções individualmente
-conn = PostgresHook(postgres_conn_id=Variable.get('p3m_conn')).get_conn()
-cursor = conn.cursor()
 
 #Funções de construção dos logs para as funções de tratamento da base no BD
 #Função com query retorna os números dos processos do que estão inativos
-def log_inativos():
+def log_inativos(bd_conn):
+    conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
+    cursor = conn.cursor()
     query_inat='''select ft."DSProcesso" 
                     from anm."FC_ProcessoTotal" ft 
                     left join anm."TB_Processo" tp on ft."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S' 
@@ -26,7 +23,9 @@ def log_inativos():
         task_logger.info('Processo: {0}'.format(row[0]))
 
 #Função com query retorna os números dos processos duplicados
-def log_duplicados():
+def log_duplicados(bd_conn):
+    conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
+    cursor = conn.cursor()    
     query_dupli='''select ft."DSProcesso", count(ft."DSProcesso")
                     from anm."FC_ProcessoTotal" ft
                     group by ft."DSProcesso", ft."QTAreaHA", ft."SHAPE"  
@@ -40,7 +39,9 @@ def log_duplicados():
 #Função com as querys que retornam os números dos processos com problemas geometria
 #Query_geom1 processos com geometrias inválidas
 #Query_geom2 processos com geometrias com coordenadas z
-def log_geom():
+def log_geom(bd_conn):
+    conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
+    cursor = conn.cursor()    
     query_geom1='''select (ft."DSProcesso"), st_isvalidreason(ft."SHAPE")
                     from anm."FC_ProcessoTotal" ft 
                     where st_isvalid(ft."SHAPE") is false;'''
