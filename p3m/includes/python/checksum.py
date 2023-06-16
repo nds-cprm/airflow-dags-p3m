@@ -5,14 +5,15 @@ import logging
 task_logger = logging.getLogger("airflow.task")
 
 #Função que gera os hashs do base/arquivo utilizado na ultima execução com a execução atual e compara para avaliar necessidade da execução da etl completa
-def checkhash(ti,**kwargs):
+def checkhash(ti, **kwargs):
     a_file=ti.xcom_pull(task_ids='p3m_etl_consumo_dados')#Xcom com valor do caminho para base/arquivo utilizado na comparação de hash
     temp = kwargs['dir'] #pasta de backups
-    prev = kwargs['prev'] #data da ultima execução bem sucedida para construir caminho de ultima base para comparar hash 
-    y=prev[0:4] #manipulação para obter corretamente os strings correspondentes a construção do caminho arvorizado por data
-    m=prev[4:6]
-    d=prev[6:8]
-    p_file=path.join(f'{temp}',y,m,d,'DBANM.gdb.zip') # construção do caminho para a base previa
+    prev = kwargs['prev_start_date_success'] #data da ultima execução bem sucedida para construir caminho de ultima base para comparar hash 
+
+    if not prev:
+        return 1
+
+    p_file=path.join(temp, prev.year, prev.month, prev.day,'DBANM.gdb.zip') # construção do caminho para a base previa
     #link = path.join(f'{temp}',y,m,d,'redirec_base') 
     ti.xcom_push(key='p_file',value=p_file) #xcom que envia o arquivo previo para ser utilizado
 

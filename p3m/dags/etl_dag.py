@@ -57,7 +57,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'prev':'{{prev_start_date_success | ds_nodash}}','dir':d_folder},
+    op_kwargs={'dir': d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
