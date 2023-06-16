@@ -28,7 +28,9 @@ def consumir_dado(url, temp_dir, ti):
             makedirs(dfolder,exist_ok=True)
             open(f'{dfolder}/DBANM.gdb.zip', 'wb').write(response.content)
             task_logger.info('Arquivo gravado em '+dfolder)
-            ti.xcom_push(key="temp_zip", value=f'{dfolder}/DBANM.gdb.zip')
+            ti.xcom_push(key='a_path',value=dfolder)
+            #ti.xcom_push(key="temp_zip", value=f'{dfolder}/DBANM.gdb.zip')
+            return f'{dfolder}/DBANM.gdb.zip'
         else:
             task_logger.error('Arquivo não-baixado')
             task_logger.error(f'Status: {response.status_code}')
