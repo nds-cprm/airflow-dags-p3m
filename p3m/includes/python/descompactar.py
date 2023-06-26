@@ -1,8 +1,5 @@
-import zipfile
 import subprocess
 import logging
-import os
-from .utils import create_get_dir
 
 
 task_logger = logging.getLogger("airflow.task")
@@ -11,7 +8,7 @@ task_logger = logging.getLogger("airflow.task")
 def descompactar(temp_dir, ti):
 
     #Request de download do arquivo .gdb
-    temp_zip = ti.xcom_pull(key="temp_zip")
+    temp_zip = ti.xcom_pull(task_ids='p3m_etl_consumo_dados')
     print(['unzip', str(temp_zip)])
     result = subprocess.run(['unzip', '-o', str(temp_zip),'-d', f'{temp_dir}/'], capture_output=True, text=True)
     if result.returncode != 0:
