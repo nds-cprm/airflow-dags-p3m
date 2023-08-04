@@ -3,7 +3,9 @@ import logging
 import sys
 
 from os import path,makedirs
+import subprocess
 from datetime import date
+import hashlib
 
 
 #direcionamento do log
@@ -30,9 +32,22 @@ def consumir_dado(url, temp_dir, ti):
             dfolder = path.join(mfolder,date.today().strftime("%d"))
             makedirs(dfolder,exist_ok=True)
             open(f'{dfolder}/DBANM.gdb.zip', 'wb').write(response.content)
+            a_file=f'{dfolder}/DBANM.gdb.zip'
             task_logger.info('Arquivo gravado em '+dfolder)
+
+            #Lendo e gerando o hash sha256 para basea tual
+            with open(a_file,"rb") as f: 
+                bytes = f.read() # read entire file as bytes
+                a_hash = hashlib.sha256(bytes).hexdigest();
+            
+            #Escrevendo o hash em um arquivo na pasta
+            output=a_file +'.sha256'
+            with open(output,"w") as f:
+                f.write(a_hash)
+            
+            #Xcoms enviando os endereços dos arquivos para uso em outras tasks 
+            ti.xcom_push(key="a_hash", value=a_hash)
             ti.xcom_push(key='a_path',value=dfolder)
-            #ti.xcom_push(key="temp_zip", value=f'{dfolder}/DBANM.gdb.zip')
             return f'{dfolder}/DBANM.gdb.zip'
         else:
             task_logger.error('Arquivo não-baixado')

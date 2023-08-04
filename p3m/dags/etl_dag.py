@@ -1,5 +1,16 @@
+"""
+Autores: Gabriel Viterbo GitHub@GabrieViterbolgeo/GitLab@gabrielviterbo.ti
+         Ítalo Silva  GitHub@italodellagarza /GitLab@italosilva.ti
+
+Data: Junho/2023
+
+Descrição: Projeto de engenharia de dados com foco em dados geográficos desenvolido com base em plataforma OpenSource Apache Airflow.
+Estrutura-se em uma ETL com consumo, tratamento dos dados e carregamento em de forma dinâmica no Banco de dados. 
+Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais como Gdal/Ogr.
+"""
+
 from datetime import datetime
-#Operatos padrão
+#Operadores padrão
 from airflow.operators.python import PythonOperator
 from airflow.operators.python import BranchPythonOperator
 #importando módulo do postgresoperator através do provider Postgres

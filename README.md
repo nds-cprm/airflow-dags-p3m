@@ -1,3 +1,13 @@
+# Autores
+Gabriel Viterbo - GitHub@GabrieViterbolgeo / GitLab@gabrielviterbo.ti
+
+Ítalo Silva - GitHub@italodellagarza / GitLab@italosilva.ti
+
+Data: Junho/2023
+
+# airlfow_p3m
+Projeto de Engenharia de Dados utilizando Airflow como orquestrador de etl's.
+
 # airflow-dags-p3m
 DAGs do P3M
 
