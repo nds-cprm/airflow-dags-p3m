@@ -68,7 +68,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir':d_folder},
+    op_kwargs={'dir': d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
@@ -100,7 +100,7 @@ descompactar = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
-    op_args=[d_folder,bd_conn],
+    op_args=[bd_conn],
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's

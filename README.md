@@ -1,5 +1,6 @@
 # Autores
 Gabriel Viterbo - GitHub@GabrieViterbolgeo / GitLab@gabrielviterbo.ti
+
 Ítalo Silva - GitHub@italodellagarza / GitLab@italosilva.ti
 
 Data: Junho/2023
@@ -57,7 +58,6 @@ OBS: em caso de problemas para realizar a instalação atualize/instale o pacote
 - Caso necessário reinicie os serviços do airflow para reconhecimento do módulo pyhton P3M.
 
 ## Operacionalização
-
 ### Scheduling
 - O agendamento/scheduling da operação pipeline, segue a temporalidade da base de dados, ou seja, diáriamente. Sendo assim, o agendamento para execução da DAG @daily, o horário em específico é adaptável de acordo com a necessidade de disponibilização mediante aos acessos da base.
 

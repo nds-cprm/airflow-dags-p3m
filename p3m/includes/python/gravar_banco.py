@@ -1,5 +1,8 @@
 import subprocess
 import logging
+import sys
+
+from os import path
 
 from airflow.hooks.base import BaseHook
 
@@ -18,7 +21,7 @@ LAYERS = [
 
 task_logger = logging.getLogger("airflow.task")
 
-def gravar_banco(temp_dir,bd_conn):
+def gravar_banco(bd_conn, ti, **kwargs):
 
     conn = BaseHook.get_connection(bd_conn)
 
@@ -27,7 +30,9 @@ def gravar_banco(temp_dir,bd_conn):
     password = conn.password
     user = conn.login
     port = conn.port
-    active_schema = "anm" #Substituir o nome do schema onde serão processados e salvo os dados    
+    active_schema = "anm" #Substituir o nome do schema onde serão processados e salvo os dados
+
+    gdb = path.join(ti.xcom_pull(key='a_path'), "DBANM.gdb.zip")
 
     for layer in LAYERS:
         # TODO: Trocar por PyGDAL -> Conflita versões de python
@@ -37,7 +42,7 @@ def gravar_banco(temp_dir,bd_conn):
                 "-f",
                 "PostgreSQL",
                 f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
-                f'{temp_dir}/DBANM.gdb',
+                gdb,
                 layer, 
                 "-lco",
                 "launder=no",
@@ -54,6 +59,8 @@ def gravar_banco(temp_dir,bd_conn):
         )
         if result.returncode != 0:
             task_logger.error(result.stderr)
-            exit -1#type:ignore
+            sys.exit(-1) #type:ignore
+
         task_logger.info(result.stdout)
+
     return 0
