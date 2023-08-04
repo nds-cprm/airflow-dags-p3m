@@ -13,9 +13,9 @@ from datetime import datetime
 #Operadores padrão
 from airflow.operators.python import PythonOperator
 from airflow.operators.python import BranchPythonOperator
+from airflow.operators.empty import EmptyOperator
 #importando módulo do postgresoperator através do provider Postgres
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.operators.empty import EmptyOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
 from p3m.includes.python.consumo import consumir_dado
@@ -51,7 +51,7 @@ etl_dag = DAG (
         "email_on_failure": False
         },
         start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * 1-5',#Ajustar em produção
+        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False )
 
 #Definição das tasks que compõem a dag
@@ -182,6 +182,12 @@ atualizar_mvwpma=PostgresOperator(
     sql="sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
+calc_arealavra=PostgresOperator(
+    task_id='p3m_calcular_arealavra',
+    postgres_conn_id=bd_conn,
+    sql="sql/calc_arealavra.sql",
+    dag=etl_dag)
+
 #Task para atualização da Data nos cards do dashboard
 atl_cards=PostgresOperator(
     task_id='p3m_atualizar_cards',
@@ -194,6 +200,7 @@ atl_cards=PostgresOperator(
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>calc_arealavra>>atl_cards # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
+
