@@ -26,7 +26,7 @@ def simbolic_link(ti):
             
             if result.returncode != 0:
                 task_logger.error(result.stderr)
-                exit -1#type:ignore
+                sys.exit(-1)
             return 0
     #Em caso padrõa, execução anterior possui uma base, criação do link para o arquivo gdb.zip    
     result = subprocess.run("ln -s "
