@@ -40,4 +40,4 @@ def simbolic_link(ti):
 
     task_logger.info(result.stdout)
     task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
-    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + p_file)
+    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + p_path + '/DBANM.gdb.zip')
