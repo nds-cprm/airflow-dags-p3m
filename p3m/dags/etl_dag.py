@@ -50,8 +50,8 @@ etl_dag = DAG (
         "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
         "email_on_failure": False
         },
-        start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
+        start_date = datetime(2023, 8, 9),
+        schedule_interval = "0 1 * * 2,4,6"
         catchup = False )
 
 #Definição das tasks que compõem a dag
