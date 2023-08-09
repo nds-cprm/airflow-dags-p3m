@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import os
 import sys
 
 task_logger = logging.getLogger("airflow.task")
