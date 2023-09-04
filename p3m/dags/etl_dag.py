@@ -68,7 +68,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir': d_folder},
+    op_kwargs={'dir':d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
@@ -100,7 +100,7 @@ descompactar = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
-    op_args=[bd_conn],
+    op_args=[d_folder,bd_conn],
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
@@ -182,11 +182,6 @@ atualizar_mvwpma=PostgresOperator(
     sql="sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
-calc_arealavra=PostgresOperator(
-    task_id='p3m_calcular_arealavra',
-    postgres_conn_id=bd_conn,
-    sql="sql/calc_arealavra.sql",
-    dag=etl_dag)
 
 #Task para atualização da Data nos cards do dashboard
 atl_cards=PostgresOperator(
@@ -200,7 +195,7 @@ atl_cards=PostgresOperator(
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>calc_arealavra>>atl_cards # type: ignore
+branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 
