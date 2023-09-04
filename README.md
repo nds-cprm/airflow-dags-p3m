@@ -58,6 +58,7 @@ OBS: em caso de problemas para realizar a instalação atualize/instale o pacote
 - Caso necessário reinicie os serviços do airflow para reconhecimento do módulo pyhton P3M.
 
 ## Operacionalização
+
 ### Scheduling
 - O agendamento/scheduling da operação pipeline, segue a temporalidade da base de dados, ou seja, diáriamente. Sendo assim, o agendamento para execução da DAG @daily, o horário em específico é adaptável de acordo com a necessidade de disponibilização mediante aos acessos da base.
 
@@ -74,12 +75,9 @@ Sugestão:
 -Tabelas de domínio
 dm_evento,dm_faseprocesso,dm_unidade_adm_reg,dm_unidade_protocol,dm_uso_substancia,dmsubstancia
 
--Tabelas de cálculo
-area_intersect 
-
 ##### Schema public
 -Tabela de calculos:
-arealavra,p3m_municipio_geom
+p3m_municipio_geom
 
 -View materializada alimentação do sistema
 mvw_cadastro_minerario
