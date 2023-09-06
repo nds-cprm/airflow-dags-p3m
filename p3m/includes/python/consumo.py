@@ -12,7 +12,8 @@ import hashlib
 task_logger = logging.getLogger("airflow.task")
 
 # Função para donwload do arquivo base .gdb
-def consumir_dado(url, temp_dir, ti):
+def consumir_dado(url, temp_dir, **kwargs):
+    ti = kwargs['ti']
 
     #Request de download do arquivo .gdb
     try:
@@ -20,7 +21,7 @@ def consumir_dado(url, temp_dir, ti):
     except Exception as e:
         task_logger.error('Download falhou')
         task_logger.error(str(e))
-        exit(-1)
+        sys.exit(-1)
     else:
         if response.status_code < 300:
             task_logger.info('Arquivo baixado')

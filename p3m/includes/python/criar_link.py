@@ -5,7 +5,9 @@ import sys
 task_logger = logging.getLogger("airflow.task")
 
 #Função que cria o link simbólico em caso de execução da branch_b, e direciona o backup da pasta da execução atual para da ultima excução com base igual
-def simbolic_link(ti):
+def simbolic_link(**kwargs):
+    ti = kwargs['ti']
+
     a_path=ti.xcom_pull(key='a_path')#caminho do diretorio de backup da execução atual
     p_path=ti.xcom_pull(key='p_path')#caminho do diretorio de backup da base correspondente igual a atual
 

@@ -21,7 +21,8 @@ LAYERS = [
 
 task_logger = logging.getLogger("airflow.task")
 
-def gravar_banco(bd_conn, ti, **kwargs):
+def gravar_banco(bd_conn, **kwargs):
+    ti = kwargs['ti']
 
     conn = BaseHook.get_connection(bd_conn)
 

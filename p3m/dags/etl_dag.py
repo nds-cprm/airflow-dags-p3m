@@ -100,7 +100,7 @@ descompactar = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
-    op_args=[d_folder,bd_conn],
+    op_args=[bd_conn],
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
