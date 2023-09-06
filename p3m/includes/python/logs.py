@@ -9,7 +9,7 @@ task_logger = logging.getLogger("airflow.task")
 
 #Funções de construção dos logs para as funções de tratamento da base no BD
 #Função com query retorna os números dos processos do que estão inativos
-def log_inativos(bd_conn):
+def log_inativos(bd_conn, **kwargs):
     conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
     cursor = conn.cursor()
     query_inat='''select ft."DSProcesso" 
