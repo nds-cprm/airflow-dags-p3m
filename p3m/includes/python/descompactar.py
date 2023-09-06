@@ -5,7 +5,7 @@ import logging
 task_logger = logging.getLogger("airflow.task")
 
 # Função para consumir e extrair os dados
-def descompactar(temp_dir, kwargs):
+def descompactar(temp_dir, **kwargs):
     ti = kwargs['ti']
 
     #Request de download do arquivo .gdb
