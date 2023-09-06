@@ -1,5 +1,6 @@
 import subprocess
 import logging
+import os
 import sys
 
 task_logger = logging.getLogger("airflow.task")
@@ -27,7 +28,7 @@ def simbolic_link(**kwargs):
             
             if result.returncode != 0:
                 task_logger.error(result.stderr)
-                exit -1#type:ignore
+                sys.exit(-1)
             return 0
     #Em caso padrõa, execução anterior possui uma base, criação do link para o arquivo gdb.zip    
     result = subprocess.run("ln -s "
@@ -41,4 +42,4 @@ def simbolic_link(**kwargs):
 
     task_logger.info(result.stdout)
     task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
-    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + p_file)
+    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + p_path + '/DBANM.gdb.zip')
