@@ -1,10 +1,21 @@
+"""
+Autores: Gabriel Viterbo GitHub@GabrieViterbolgeo/GitLab@gabrielviterbo.ti
+         Ítalo Silva  GitHub@italodellagarza /GitLab@italosilva.ti
+
+Data: Junho/2023
+
+Descrição: Projeto de engenharia de dados com foco em dados geográficos desenvolido com base em plataforma OpenSource Apache Airflow.
+Estrutura-se em uma ETL com consumo, tratamento dos dados e carregamento em de forma dinâmica no Banco de dados. 
+Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais como Gdal/Ogr.
+"""
+
 from datetime import datetime
-#Operatos padrão
+#Operadores padrão
 from airflow.operators.python import PythonOperator
 from airflow.operators.python import BranchPythonOperator
+from airflow.operators.empty import EmptyOperator
 #importando módulo do postgresoperator através do provider Postgres
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.operators.empty import EmptyOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
 from p3m.includes.python.consumo import consumir_dado
@@ -40,7 +51,7 @@ etl_dag = DAG (
         "email_on_failure": False
         },
         start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * 1-5',#Ajustar em produção
+        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False )
 
 #Definição das tasks que compõem a dag
@@ -57,7 +68,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir': d_folder},
+    op_kwargs={'dir':d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
@@ -171,6 +182,7 @@ atualizar_mvwpma=PostgresOperator(
     sql="sql/atualizar_mvwpma.sql",
     dag=etl_dag)
 
+
 #Task para atualização da Data nos cards do dashboard
 atl_cards=PostgresOperator(
     task_id='p3m_atualizar_cards',
@@ -186,3 +198,4 @@ consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
+

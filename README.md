@@ -1,3 +1,13 @@
+# Autores
+Gabriel Viterbo - GitHub@GabrieViterbolgeo / GitLab@gabrielviterbo.ti
+
+Ítalo Silva - GitHub@italodellagarza / GitLab@italosilva.ti
+
+Data: Junho/2023
+
+# airlfow_p3m
+Projeto de Engenharia de Dados utilizando Airflow como orquestrador de etl's.
+
 # airflow-dags-p3m
 DAGs do P3M
 
@@ -46,3 +56,32 @@ OBS: em caso de problemas para realizar a instalação atualize/instale o pacote
 
 ### Execute a dag para verificação
 - Caso necessário reinicie os serviços do airflow para reconhecimento do módulo pyhton P3M.
+
+## Operacionalização
+
+### Scheduling
+- O agendamento/scheduling da operação pipeline, segue a temporalidade da base de dados, ou seja, diáriamente. Sendo assim, o agendamento para execução da DAG @daily, o horário em específico é adaptável de acordo com a necessidade de disponibilização mediante aos acessos da base.
+
+Sugestão:
+'0 23 * * *' modelo crontab
+
+### Features de BD
+- Para a correta operação da ETL é necessário que o BD esteja populado com as seguintes tabelas que são as bases da operação.
+
+##### Schema anm
+-Tabelas DBANM
+-"TB_Processo", "TB_ProcessoPessoa", "TB_ProcessoEvento", "TB_ProcessoMunicipio", "TB_Pessoa", "TB_ProcessoSubstancia","FC_ProcessoAtivo", "FC_Disponibilidade", "FC_Arrendamento".
+
+-Tabelas de domínio
+dm_evento,dm_faseprocesso,dm_unidade_adm_reg,dm_unidade_protocol,dm_uso_substancia,dmsubstancia
+
+##### Schema public
+-Tabela de calculos:
+p3m_municipio_geom
+
+-View materializada alimentação do sistema
+mvw_cadastro_minerario
+mvw_processo_evento
+
+##### Schema geoserver
+-mvw_processos_minerarios_ativos

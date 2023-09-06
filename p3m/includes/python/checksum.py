@@ -1,41 +1,36 @@
 import hashlib
-from os import path
+import os
 import logging
+import subprocess
 
 task_logger = logging.getLogger("airflow.task")
 
-#Função que gera os hashs do base/arquivo utilizado na ultima execução com a execução atual e compara para avaliar necessidade da execução da etl completa
-def checkhash(ti, **kwargs):
-    a_file=ti.xcom_pull(task_ids='p3m_etl_consumo_dados')#Xcom com valor do caminho para base/arquivo utilizado na comparação de hash
+#Função que gera o hash do base/arquivo utilizado na ultima execução e compara com a atual para avaliar necessidade da execução da etl completa
+def checkhash(**kwargs):
+    ti = kwargs["ti"]
     temp = kwargs['dir'] #pasta de backups
     prev = kwargs['prev_start_date_success'] #data da ultima execução bem sucedida para construir caminho de ultima base para comparar hash 
+    a_hash= ti.xcom_pull(key='a_hash') #Acessando resultado do hash da excução atual enviado na xcom
+    task_logger.info(a_hash)
 
     if not prev:
-        return 1
+        return 1   
 
-    p_file=path.join(temp, prev.year, prev.month, prev.day,'DBANM.gdb.zip') # construção do caminho para a base previa
-    #link = path.join(f'{temp}',y,m,d,'redirec_base') 
-    ti.xcom_push(key='p_file',value=p_file) #xcom que envia o arquivo previo para ser utilizado
+    p_path=os.path.join(temp,f'{prev.year}',f'{prev.month:02d}',f'{prev.day:02d}') # construção do caminho para a base previ
 
-    #if path.islink(link)==False:
+    ti.xcom_push(key='p_path',value=p_path) #xcom que envia o arquivo previo para ser utilizado
 
-    #Lendo e gerando o hash sh256 para cada uma das bases para
-    with open(p_file,"rb") as f: 
-        bytes = f.read() # read entire file as bytes
-        p_hash = hashlib.sha256(bytes).hexdigest();
-        task_logger.info(p_hash)
-
-    with open(a_file,"rb") as f:
-        bytes = f.read() # read entire file as bytes
-        a_hash = hashlib.sha256(bytes).hexdigest();
-        task_logger.info(a_hash)
-    
+    #Lendo o hash da base da ultima execução apra comparação
+    result=subprocess.run('cat ' + p_path +'/DBANM.gdb.zip.sha256',capture_output=True,text=True,shell=True)
+    p_hash=result.stdout
+    task_logger.info(p_hash)
+        
     #comparação dos hash e retorno para condicional para ser utilizado na task de branch
     if a_hash==p_hash:
         task_logger.info('Não houve atualização da base, processo de ETL será resumido')
 
         return 0
-    
+        
     else:
         task_logger.info('Base atualizada, processo de ETL ocorrerá normalmente')
 
