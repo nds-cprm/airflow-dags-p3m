@@ -7,22 +7,31 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
 
 ## Inicializando
 
-1. __Faça o clone do repositório__
+1. __Faça o clone do repositório airfow_dev__
+  Vale lembrar que a estrutura foi construida tendo como base o projeto P3M, sendo assim irá conter uma dag principal e scripts de tasks, os quais podem ser reaproveitados para o seu projeto.
 
-2. __Faça o fetch do repositório da base original__
+2. __Identificação da estrutura do projeto__
 
-    Antes de inicializar o projeto com a imagem customizada, é necessário estabelecer a estrutura inicial do Airflow, a partir da imagem. Isso devido ao processo de criação da imagem customizada se tratar da extensão de uma imagem Docker já existente.
+  + __Diretórios padrão do airflow e diretório de scripts__
+    ./config ./dags ./logs ./plugins ./includes 
+  
+  + __docker-compose.yaml__
+    Configuração de composição da imagem base padrão do airflow
 
-    ```bash
-    curl -LfO 'https://airflow.apache.org/docs/apache-airflow/2.7.2/docker-compose.yaml'
-    ```
+  + __docker-compose_new.yaml__
+    Configurado para operacionalização da imagem extendida airflow-geo 
+
+  + __dockerfile__
+    Composição da imagem airflow-geo com as devidas configurações, em caso de necessidades específicas para determinado projeto em que está em uso pode ser modificado.
+
+  + __requirements.txt__
+    Bibliotecas python padrão para operacionalização de métodos geo e cd, pode ser modificado em caso de necessidades específicas.
+
 3. __Inicialize a estrutura padrão__
 
-    Para criação da estrutura padrão é preciso estabelecer os diretórios para responsividade entre o host e os contêineres, como bind dos volumes, como a seguir:
-
-    ```bash
-    mkdir -p ./dags ./logs ./plugins ./config ./includes
-    ```
+    Antes de inicializar o projeto com a imagem customizada, é necessário estabelecer a estrutura inicial do Airflow, a partir da imagem. Isso devido ao processo de criação da imagem customizada se tratar da extensão de uma imagem Docker já existente.
+    
+    Para criação da estrutura padrão é preciso estabelecer os diretórios/volumes para responsividade entre o host e os contêineres, então garanta a indicação dos volumes já estabelecidos no repositório no docker-compose.yaml
 
     O diretório includes deve ser adicionado como um volume extra no `docker-compose.yaml`, como a seguir:
 
@@ -35,16 +44,22 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
     - ${AIRFLOW_PROJ_DIR:-.}/includes:/opt/airflow/includes
     ```
 
-    Outra configuração necessária é estabelecer a variavel de ambiente do UID:
+    Em sistemas Linux, outra configuração necessária é estabelecer a variavel de ambiente do UID:
 
     ```bash
     echo -e "AIRFLOW_UID=$(id -u)" > .env
     ```
+
+    Em caso de sistemas operacionais como windows ou mac, você pode receber o WARNING para o UID, mas você pode seguramente ignora-lo, e criar manualmente o arquivo ".env" no diretório do projeto e adicionar o conteúdo:
+
+    ´´´bash
+    AIRFLOWUID=50000
+    ´´´
     __Confirmar o endereço das portas utilizadas:__
 
     O Airflow por padrão possui portas de serviços já indicadas em sua configuração, se acaso estiver operando em um servidor ou mesmo uma máquina com outros serviços já alocados nessas portas é necessário fazer o bind das mesmas para evitar conflitos e garantir o funcionamento.
 
-    Verifique as seções indicadas abaixo e altere o padrão para o endereço que te atenda.Em caso de exposição do serviço o LocalHost deve ser substituído pelo endereço da máquina.
+    Verifique as seções indicadas abaixo e altere o padrão para o endereço que te atenda.Em caso de exposição do serviço, o LocalHost deve ser substituído pelo endereço da máquina.
 
     ```yaml
     ...
@@ -67,7 +82,7 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
             test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
     ``` 
 
-    Após isso, deve-se inicializar o Airflow com a migração e estabelecimento do banco de metadados e a criação de usuários:
+    Após esses passos, é preciso inicializar o Airflow para a migração e estabelecimento do banco de metadados e a criação de usuários:
 
     ```bash
     docker compose up airflow-init
@@ -82,13 +97,16 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
     start_airflow-init_1 exited with code 0
     ```
 
-4. __Verifique se a inicialização ocorreu normalmente inicializando os conteneres__
+4. __Verifique se a inicialização ocorreu normalmente inicializando os conteineres__
+
+  Para verificação suba os serviços nos conteineres com o comando a seguir.
 
     ```bash
     docker compose up
     ```
-
-    Acesse, o endereço do Aiflow Webserve UI configurado, e para verificar se os serviços funcionaram, o endereço padrão é:
+  Durante a inicialização, no terminal podem ser registrados alguns WARNINGS, porém para os padrões das configurações pretendidas nesse projeto, estes já estão previsos e estão listados nos próximos passos  com as devidas soluções, podendo aguardar o fim do processo para lidar com estes detalhes.
+  
+  Acesse, o endereço do Aiflow Webserve UI configurado, e para verificar se os serviços funcionaram, a menos que tenha feito o bind no passo anterior, o endereço padrão é:
 
     http://localhost/:8080
 
@@ -98,7 +116,7 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
 
 5. __Prepare o projeto para imagem `airflow-geo`__:
 
-    O `docker-compose.yaml` atual do seu projeto corresponde a versão da imagem padrão, para que haja correspondência com a imagem `airflow-geo` é necessário utilizar o novo arquivo disponível no repositório que será clonado, para isso siga os passos a seguir, antes de clonar o respositório.
+    O arquivo denominado `docker-compose.yaml` neste momento no seu projeto corresponde a versão da imagem padrão, para que haja correspondência com a imagem `airflow-geo` é necessário utilizar o novo arquivo disponível no repositório que será clonado, para isso siga os passos a seguir.
 
     Derrube os serviços do Airflow no docker:
 
@@ -106,16 +124,14 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
     docker compose down
     ```
 
-    Apague o arquivo `docker-compose.yaml`
+    Renomeie o arquivo `docker-compose.yaml` para `docker-compose_old.yaml` para que não fique operacional e cause conflito.
 
-6. __Clonar o repositório `airflow_dev`__:
-
-    Faça o clone do projeto no repositório que contém a estrutura para a imagem airflow-geo. Vale lembrar que a estrutura foi construida tendo como base o projeto P3M, sendo assim irá conter uma dag principal e scripts de tasks, os quais podem ser reaproveitados para o seu projeto.
+    Agora, renomeie o arquivo `docker-compose_new.yaml` para `docker-compose.yaml` para que este se torne a versão operacional.
 
 
-7. __Confirmar as configurações do novo `docker-compose.yaml`__
+6. __Confirmar as configurações do novo `docker-compose.yaml`__
 
-    Para utilização de uma imagem extendida/customizada do Airflow no Docker, o arquivo `docker-compose.yaml` precisa ser adicionado de determinadas configurações para seu correto funcionamento e garantia de funcionalidades que são interessantes porém podem estar desabilitadas por padrão.
+    Para utilização de uma imagem extendida/customizada do Airflow no Docker, o arquivo `docker-compose.yaml` precisa ser adicionado de determinadas configurações para seu correto funcionamento e garantia de funcionalidades que são interessantes porém podem estar desabilitadas por padrão. Estas configurações já foram feitas, os passos abaixo demonstram quais são e suas funções, para caso de adaptações específicas.
 
     + __Variáveis de ambiente__:
 
@@ -126,7 +142,7 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
 
         Variável que indica o caminho para o volume do conteiner do Airflow-Worker com os scripts externos que compõem as tasks:
         ```yaml 
-        PYTHONPATH: airflow/includes$PYTHONPATH
+        PYTHONPATH: :$PYTHONPATH
         ```
 
         Variável habilita o botão e a funcionalidade de testar a conexão com um DB ou outro serviço quando configurada pela Webserver UI:
@@ -154,6 +170,33 @@ Este projeto foi construído com base nos códigos utilizados para o projeto P3M
         ```
         Em caso de dúvida retorne ao item referente as configurações padrão
 
+7. __Utilizando a imagem customizada__
+
+A imagem customizada `airflow_dev` que já foi produzida, ou seja, está com build pronto para ser utilizada, então para utiliza-la é preciso fazer o fetch da mesma no registry deste respositório e estabelece-la como imagem padrão do seu projeto.
+
+Para fazer o fetch utilize o comando a seguir:
+
+  ```bash
+  docker run registry.gitlab.com/gabrielviterbo.ti/airflow_dev:latest
+  ```
+
+Após fazer o fetch da imagem no repositório de trabalho, redirecione ela como a imagem padrão do seu projeto no `docker-compose.ymal`
+
+  ```yml
+  image: registry.gitlab.com/gabrielviterbo.ti/airflow_dev
+  ```
+
+  Inicie os conteineres novamente.
+
+   + __Erro de importação de DAG__
+
+  Após inicializar, na UI do Webserver será exibido um erro de importação da DAG, referente a inexistência da conexão p3m_conn.
+  Isso ocorrerá devido a DAG padrão carregada no projeto referente a outro projeto P3M.
+
+  Não é intenção que se utilize essa DAG, ela foi utilizada para testes e para carregar o diversos códigos de tasks que a compõe para ser reaproveitados em demais projeto. 
+  
+  Logo para teste de inicialização de DAG construa um modelo simples utilizando alguma task existente.
+
 8. __Configurações das DAGs__
 O bom funcionamento das DAGs a serem desenvolvidas nesta imagem estão condicionadas a uma série de configurações. Abaixo, listam-se algumas configurações importantes:
 
@@ -169,7 +212,7 @@ O bom funcionamento das DAGs a serem desenvolvidas nesta imagem estão condicion
     )
     ```
 
-9. __Configurações do Servidor/Máquina para uso do Broker__
+9. __Configurações em Servidor para uso do Broker__
 
 Ao iniciar o serviço, durante o log de início no terminal, o Redis que é o Broker utilizado por essa configuração para mensageria, pode exibir o seguinte Warning:
 
@@ -198,20 +241,34 @@ Lembre-se de que essa configuração é específica para o Redis e é usada para
 
         https://serverfault.com/questions/606185/how-does-vm-overcommit-memory-work
 
-10. __Identificação da estrutura do projeto__
 
-Diretórios padrão do airflow e diretório de scripts:
-  ./config ./dags ./logs ./plugins ./includes (Devem ser mergeados por padrão durante/após o clone do repositório com aqueles existentes e vazios em seu diretório de uso do projeto.)
+10. __Fazer um novo build__
 
-Docker-compose.yaml
-  Configurado para operacionalização da imagem extendida airflow-geo 
+Caso o projeto em que você pretende utilizar o airflow possua muitas especifidades nas pipelines e que não são atendidas pela imagem gerada neste repositório, você pode criar uma nova extensão da imagem docker airflow, sendo possível ainda reaproveitar as pré configurações do dockerfile já existente.
 
-dockerfile
-  Composição da imagem airflow-geo com as devidas configurações, em caso de necessidades específicas para determinado projeto em que está em uso pode ser modificado.
+Para isso o primeiro passo é seguir as intruções contidas no próprio docker-compose.yaml no qual se pede para comentar a indicação direta da imagem e descomentar a parte do build.
 
-requirements.txt
-  Bibliotecas python padrão para operacionalização de métodos geo e cd, pode ser modificado em caso de necessidades específicas.
+```yaml
+ &airflow-common
+  # In order to add custom dependencies or upgrade provider packages you can use your extended image.
+  # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
+  # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
+  #image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.7.2}
+   build: .
+```
 
+O proximo passo é utilizar o arquivo dockerfile já existente. O modelo construtor já possui  grande parte das dependencias de sistema (linux dist-bullsey) e python (libs geo/cd) e banco de dados para trabalhar com dados Geo.
+
+É possível adicionar outros repositórios e instalar novos pacotes e configurações no sistema, sob a estrutura do `User root`.
+
+Para adicionar novos pacotes em python, adicione-os no arquivo requirements.txt, mas caso precise fazer alguma outra configuração específica do python, utiliza o bloco com o `User airflow`.
+
+Faça o build da nova imagem:
+  
+  ```bash
+  docker build -t nome.da.imagem
+  ```
+ Após o sucesso do build, verifique as configurações dos passos 7  a 10 desse documento.
 
 ## Add your files
 Apenas para desenvolvedores autorizados no projeto.
@@ -223,52 +280,6 @@ git branch -M main
 git push -uf origin main
 ```
 
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
 
 
 
