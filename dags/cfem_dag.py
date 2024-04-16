@@ -1,0 +1,79 @@
+from datetime import datetime
+#Operadores padrão
+from airflow.operators.python import PythonOperator
+from airflow.operators.python import BranchPythonOperator
+from airflow.operators.empty import EmptyOperator
+#importando módulo do postgresoperator através do provider Postgres
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow import DAG
+#caminho relativo dos módulos .py
+from includes.python.consumo import consumir_dado
+from includes.python.logs import log_inativos,log_duplicados,log_geom
+from includes.python.gravar_banco import gravar_banco
+from includes.python.descompactar import descompactar as _descompactar
+from includes.python.checksum import checkhash
+from includes.python.criar_link import simbolic_link
+#Modulo para uso das variaveis registradas
+from airflow.models import Variable
+
+def make_branch(ti):
+    r=ti.xcom_pull(task_ids='p3m_etl_checksum')
+    if r==1:
+       return 'p3m_branch_a'
+    else:
+        return 'p3m_branch_b'
+
+#Aqui serão listadas todas as variáveis(conexões) da UI Airflow para serem replicadas em todas as tasks necessárias
+#Para implementação definir em Webserver admin>variables
+#Em caso de necessidade substituir as variáveis e o valores pelas criadas pelo usuário no UI
+
+bd_conn = Variable.get('p3m_teste') #Conexão com banco de dados da aplicação
+url_data = Variable.get('cfem_data') #contém o endereço do serviço de acesso ao arquivo gdb
+d_folder = Variable.get('cfem_folder') #Pasta de backup das bases de dados
+
+
+#Definição da DAG
+cfem_dag = DAG (
+        'cfem_dag', 
+        default_args = {
+        "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
+        "email_on_failure": False
+        },
+        start_date = datetime(2023, 5, 17),#Ajustar em produção
+        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
+        catchup = False,
+        template_searchpath = Variable.get('template_searchpath'))
+
+#Definição das tasks que compõem a dag
+#Task que fazer o download e salva o arquivo gdb na pasta de backup
+consumo_dados = PythonOperator(
+    task_id = 'p3m_etl_consumo_dados',
+    python_callable = consumir_dado,
+    op_args=[url_data,d_folder],
+    dag=cfem_dag)
+
+#Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
+#{{prev_start_date_success | ds_nodash}} macro que retorna a data de inicialização da utlima utilização bem sucedida para identificação do diretorio e comparação das bases
+check_sum = PythonOperator(
+    task_id='p3m_etl_checksum',
+    python_callable=checkhash,
+    provide_context=True,
+    op_kwargs={'dir':d_folder},
+    dag=cfem_dag
+)
+#Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
+branching = BranchPythonOperator(
+    task_id='branch',
+    python_callable=make_branch,
+    dag=cfem_dag
+)
+#Task's baseadas em operadores vazios que tem como objetivo único inicializar a branch indicada pela operador de branch da task anterior
+branch_a= EmptyOperator(task_id='p3m_branch_a')
+
+branch_b= EmptyOperator(task_id='p3m_branch_b')
+
+#Task que cria o link simbólico de redirecionamento de diretorio de backup em caso de tentativas de execução quando não houve atualização da base
+criar_link = PythonOperator(
+    task_id='p3m_criar_link',
+    python_callable=simbolic_link,
+    dag=cfem_dag)
