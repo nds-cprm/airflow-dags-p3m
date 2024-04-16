@@ -253,7 +253,21 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-        exec /entrypoint airflow version
+        /entrypoint airflow version
+
+        echo "TESTE #################"
+
+        # gosu airflow airflow db migrate
+
+        # Adiciona a conexão no Airflow
+        gosu airflow airflow connections add ${DB_RESULTS_CONNECTION} --conn-uri "postgresql+psycopg2://${DB_RESULTS_USER}:${DB_RESULTS_PASS}@${DB_RESULTS_HOST}:${DB_RESULTS_PORT}/${DB_RESULTS_DATABASE}"
+        gosu airflow airflow connections add ${DB_META_CONNECTION} --conn-uri "postgresql+psycopg2://${DB_META_USER}:${DB_META_PASS}@${DB_META_HOST}:${DB_META_PORT}/${DB_META_DATABASE}"
+
+        echo "BANCO OK #################"
+        # Importa as variáveis no Airflow
+        gosu airflow airflow variables import "variables.json"
+
+        echo "VARIAVEIS OK #################"
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env

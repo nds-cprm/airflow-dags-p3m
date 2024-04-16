@@ -1,0 +1,6 @@
+{
+    "mpf_teste": "mpf_teste",
+    "cfem_data": "https://app.anm.gov.br/DadosAbertos/ARRECADACAO/CFEM_Arrecadacao.csv",
+    "cfem_folder": "home/sysadmin/temp_cfem",
+    "template_searchpath" :"/opt/airflow/includes/sql"
+}
