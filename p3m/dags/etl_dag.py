@@ -11,11 +11,16 @@ Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais
 
 from datetime import datetime
 #Operadores padrão
-from airflow.operators.python import PythonOperator
-from airflow.operators.python import BranchPythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
-#importando módulo do postgresoperator através do provider Postgres
-from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+try:
+    # importando módulo do postgresoperator através do provider Postgres
+    # postgres-provider < 6.0.0
+    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
+except ImportError:
+    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+
 from airflow import DAG
 #caminho relativo dos módulos .py
 from p3m.includes.python.consumo import consumir_dado
@@ -42,7 +47,6 @@ bd_conn = Variable.get('p3m_conn') #Conexão com banco de dados da aplicação
 url_data = Variable.get('url_data') #contém o endereço do serviço de acesso ao arquivo gdb
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
 
-
 #Definição da DAG
 etl_dag = DAG (
         'p3m_etl', 
@@ -53,6 +57,19 @@ etl_dag = DAG (
         start_date = datetime(2023, 8, 9),
         schedule_interval = "0 1 * * 2,4,6",
         catchup = False )
+
+# Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
+pg_kwargs = {
+    'dag': etl_dag
+}
+if SQLExecuteQueryOperator.__name__ == 'PostgresOperator':
+    pg_kwargs.update({
+        'postgres_conn_id': bd_conn,  # Conexão com o banco de dados
+    })
+else:
+    pg_kwargs.update({
+        'conn_id': bd_conn,  # Conexão com o banco de dados
+    })
 
 #Definição das tasks que compõem a dag
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
@@ -104,11 +121,10 @@ gravar_dados = PythonOperator(
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
-montar_tabela= PostgresOperator(
+montar_tabela= SQLExecuteQueryOperator(
     task_id='p3m_etl_montar_tabela',
-    postgres_conn_id=bd_conn,
     sql="sql/montar_tabela.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
 inativos_log =PythonOperator(
@@ -133,63 +149,54 @@ geom_log =PythonOperator(
 #Sql é o caminho relativo do .sql de execução
 #postgres_conn_id é a conexão registrada no adm do webserver (admin>connections)
 #Variable.get('p3m-conn') conexão do DB foi registrada como uma variável no adm do webserver (admin>variables) permitindo interoperabilidade
-remover_inativos = PostgresOperator(
+remover_inativos = SQLExecuteQueryOperator(
     task_id = 'p3m_etl_remover_inativos',
-    postgres_conn_id = bd_conn,#Substituir pela variavel criada na UI e replicar nas demais tasks
     sql="sql/remov_inat.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-remover_duplicados= PostgresOperator(
+remover_duplicados= SQLExecuteQueryOperator(
     task_id='p3m_etl_remover_duplicados',
-    postgres_conn_id = bd_conn,
     sql="sql/remov_dupli.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-corrigir_geom = PostgresOperator(
+corrigir_geom = SQLExecuteQueryOperator(
     task_id='p3m_etl_corrigir_geom',
-    postgres_conn_id = bd_conn,
     sql= "sql/corrigir_geom.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-vacuum = PostgresOperator(
+vacuum = SQLExecuteQueryOperator(
     task_id='p3m_etl_vacuum_atl',
-    postgres_conn_id = bd_conn,
     sql= "sql/vacuum.sql",
     autocommit=True,
-    dag=etl_dag)
+    **pg_kwargs)
 
-atualizar_index = PostgresOperator(
+atualizar_index = SQLExecuteQueryOperator(
     task_id='p3m_etl_reindex',
-    postgres_conn_id= bd_conn,
     sql="sql/reindex.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-atualizar_mvwcadastro=PostgresOperator(
+atualizar_mvwcadastro=SQLExecuteQueryOperator(
     task_id='p3m_etl_atualizar_mvwcadastro',
-    postgres_conn_id = bd_conn,
     sql="sql/atualizar_mvwcadastro.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-atualizar_mvwevt=PostgresOperator(
+atualizar_mvwevt=SQLExecuteQueryOperator(
     task_id='p3m_etl_atualizar_mvwevt',
-    postgres_conn_id = bd_conn,
     sql="sql/atualizar_mvwevt.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
-atualizar_mvwpma=PostgresOperator(
+atualizar_mvwpma=SQLExecuteQueryOperator(
     task_id='p3m_etl_atualizar_mvwpma',
-    postgres_conn_id = bd_conn,
     sql="sql/atualizar_mvwpma.sql",
-    dag=etl_dag)
+    **pg_kwargs)
 
 
 #Task para atualização da Data nos cards do dashboard
-atl_cards=PostgresOperator(
+atl_cards=SQLExecuteQueryOperator(
     task_id='p3m_atualizar_cards',
-    postgres_conn_id=bd_conn,
     sql="sql/atl_cards.sql",
     trigger_rule='none_failed_min_one_success',
-    dag=etl_dag)
+    **pg_kwargs)
 
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
