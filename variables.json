@@ -1,6 +1,10 @@
 {
-    "mpf_teste": "mpf_teste",
     "cfem_data": "https://app.anm.gov.br/DadosAbertos/ARRECADACAO/CFEM_Arrecadacao.csv",
-    "cfem_folder": "home/sysadmin/temp_cfem",
-    "template_searchpath" :"/opt/airflow/includes/sql"
+    "cfem_folder": "home/sysadmin/temp_folder/cfem",
+    "column_names": "['ano', 'mes', 'processo', 'anodoprocesso', 'tipo_pf_pj', 'cpf_cnpj', 'substancia', 'uf', 'codigomunicipio', 'municipio', 'qt_comercializada', 'unidadedemedida', 'vl_recolhido', 'datacriacao','processo_ano']",
+    "d_folder": "home/sysadmin/temp_folder",
+    "p3m_conn": "p3m_dgti",
+    "p3m_teste": "p3m_teste",
+    "template_searchpath": "/opt/airflow/includes/sql",
+    "url_data": "https://geo.anm.gov.br/portal/sharing/rest/content/items/758fcdf1df154c0a891c53414c63b9c9/data"
 }

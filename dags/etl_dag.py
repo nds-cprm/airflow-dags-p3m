@@ -53,7 +53,7 @@ etl_dag = DAG (
         start_date = datetime(2023, 5, 17),#Ajustar em produção
         schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,
-        template_searchpath = '/opt/airflow/includes/sql')
+        template_searchpath = Variable.get('template_searchpath'))
 
 #Definição das tasks que compõem a dag
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
