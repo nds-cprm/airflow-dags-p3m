@@ -1,14 +1,11 @@
 import subprocess
 import logging
 import os
-import sys
 
 task_logger = logging.getLogger("airflow.task")
 
 #Função que cria o link simbólico em caso de execução da branch_b, e direciona o backup da pasta da execução atual para da ultima excução com base igual
-def simbolic_link(**kwargs):
-    ti = kwargs['ti']
-
+def simbolic_link(ti):
     a_path=ti.xcom_pull(key='a_path')#caminho do diretorio de backup da execução atual
     p_path=ti.xcom_pull(key='p_path')#caminho do diretorio de backup da base correspondente igual a atual
 
@@ -28,7 +25,7 @@ def simbolic_link(**kwargs):
             
             if result.returncode != 0:
                 task_logger.error(result.stderr)
-                sys.exit(-1)
+                exit -1#type:ignore
             return 0
     #Em caso padrõa, execução anterior possui uma base, criação do link para o arquivo gdb.zip    
     result = subprocess.run("ln -s "
@@ -38,8 +35,7 @@ def simbolic_link(**kwargs):
                             shell=True,text=True, capture_output=True)
     if result.returncode != 0:
         task_logger.error(result.stderr)
-        sys.exit(-1)
+        exit -1#type:ignore
 
-    task_logger.info(result.stdout)
     task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
-    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + p_path + '/DBANM.gdb.zip')
+    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base '+p_path)
