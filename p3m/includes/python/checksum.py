@@ -6,15 +6,16 @@ import subprocess
 task_logger = logging.getLogger("airflow.task")
 
 #Função que gera o hash do base/arquivo utilizado na ultima execução e compara com a atual para avaliar necessidade da execução da etl completa
-def checkhash(**kwargs):
-    ti = kwargs["ti"]
+def checkhash(ti,**kwargs):
+
     temp = kwargs['dir'] #pasta de backups
     prev = kwargs['prev_start_date_success'] #data da ultima execução bem sucedida para construir caminho de ultima base para comparar hash 
     a_hash= ti.xcom_pull(key='a_hash') #Acessando resultado do hash da excução atual enviado na xcom
     task_logger.info(a_hash)
-
+    
+    #Em caso de primeira execução da DAG a função retorna valor correspondente a execução completa
     if not prev:
-        return 1   
+        return 1        
 
     p_path=os.path.join(temp,f'{prev.year}',f'{prev.month:02d}',f'{prev.day:02d}') # construção do caminho para a base previ
 
