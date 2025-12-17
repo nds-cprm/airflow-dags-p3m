@@ -41,6 +41,7 @@ def gravar_banco(temp_dir,bd_conn):
                 layer, 
                 "-lco",
                 "launder=no",
+                "-forceNullable",
                 "-progress",
                 "--config",
                 "PG_USE_COPY",
@@ -54,7 +55,7 @@ def gravar_banco(temp_dir,bd_conn):
         )
         if result.returncode != 0:
             task_logger.error(result.stderr)
-            exit -1#type:ignore
+            exit(-1)
         task_logger.info(result.stdout)
     return 0
 
