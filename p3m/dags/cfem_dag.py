@@ -111,22 +111,22 @@ gravar_dados = PythonOperator(
 
 vacuum = SQLExecuteQueryOperator(
     task_id='cfem_vacuum_atl',
-    postgres_conn_id = bd_conn,
     sql= "sql/vacuum_cfem.sql",
     autocommit=True,
-    dag=cfem_dag)
+    dag=cfem_dag,
+    **pg_kwargs)
 
 atualizar_index = SQLExecuteQueryOperator(
     task_id='cfem_reindex',
-    postgres_conn_id= bd_conn,
     sql="sql/reindex_cfem.sql",
-    dag=cfem_dag)
+    dag=cfem_dag,
+    **pg_kwargs)
 
 atualizar_mvw_minas=SQLExecuteQueryOperator(
     task_id='cfem_atualizar_mvwminas',
-    postgres_conn_id = bd_conn,
     sql="sql/atualizar_mvw_minas_atv.sql",
-    dag=cfem_dag)
+    dag=cfem_dag
+    **pg_kwargs)
 
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
