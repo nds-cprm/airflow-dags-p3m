@@ -50,6 +50,18 @@ cfem_dag = DAG (
     #     template_searchpath = Variable.get('template_searchpath')
     )
 
+# Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
+pg_kwargs = {}
+
+if SQLExecuteQueryOperator.__name__ == 'PostgresOperator':
+    pg_kwargs.update({
+        'postgres_conn_id': bd_conn,  # Conexão com o banco de dados
+    })
+else:
+    pg_kwargs.update({
+        'conn_id': bd_conn,  # Conexão com o banco de dados
+    })
+
 #Definição das tasks que compõem a dag
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
 consumo_dados = PythonOperator(
