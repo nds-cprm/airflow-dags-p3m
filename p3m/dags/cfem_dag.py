@@ -125,7 +125,7 @@ atualizar_index = SQLExecuteQueryOperator(
 atualizar_mvw_minas=SQLExecuteQueryOperator(
     task_id='cfem_atualizar_mvwminas',
     sql="sql/atualizar_mvw_minas_atv.sql",
-    dag=cfem_dag
+    dag=cfem_dag,
     **pg_kwargs)
 
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
