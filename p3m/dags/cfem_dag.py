@@ -13,11 +13,11 @@ except ImportError:
 
 from airflow import DAG
 #caminho relativo dos módulos .py
-from includes.python.consumo import consumir_dado_cfem
-from includes.python.gravar_banco import gravar_csv_banco
-from includes.python.checksum import checkhash
-from includes.python.criar_link import simbolic_link
-from includes.python.read_tables import convert_table
+from p3m.includes.python.consumo import consumir_dado_cfem
+from p3m.includes.python.gravar_banco import gravar_csv_banco
+from p3m.includes.python.checksum import checkhash
+from p3m.includes.python.criar_link import simbolic_link
+from p3m.includes.python.read_tables import convert_table
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
