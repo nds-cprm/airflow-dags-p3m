@@ -23,14 +23,14 @@ def make_branch(ti):
         return 'p3m_branch_b'
 
 bd_conn = Variable.get('p3m_layers') #Conexão com banco de dados da aplicação
-url_data = Variable.get('map_geo_data') #contém o endereço do serviço de acesso ao arquivo gdb
+url_data = Variable.get('ocor_data') #contém o endereço do serviço de acesso ao arquivo gdb
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
-nome = Variable.get('map_geo_nome')
-nums =  Variable.get('map_geo_nums', deserialize_json=True)
+nome = Variable.get('ocor_nome')
+nums =  Variable.get('ocor_nums', deserialize_json=True)
 
 #Definição da DAG
 etl_dag = DAG (
-        'map_geo_etl', 
+        'ocor_etl', 
         default_args = {
         "email":["abc@def.com"],#Alterar em produção
         "email_on_failure": False

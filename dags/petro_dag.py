@@ -12,6 +12,7 @@ from includes.python.gravar_banco_sgb import gravar_banco_sgb as gravar_banco
 from includes.python.checksum_sgb import checkhash
 from includes.python.criar_link_sgb import simbolic_link
 from includes.python.tratamento_geom import tratamento_geom
+from includes.python.att_geoserver_sgb import atualizar_geoserver
 
 from airflow.models import Variable  # type: ignore
 
@@ -23,14 +24,14 @@ def make_branch(ti):
         return 'p3m_branch_b'
 
 bd_conn = Variable.get('p3m_layers') #Conexão com banco de dados da aplicação
-url_data = Variable.get('map_geo_data') #contém o endereço do serviço de acesso ao arquivo gdb
+url_data = Variable.get('petro_data') #contém o endereço do serviço de acesso ao arquivo gdb
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
-nome = Variable.get('map_geo_nome')
-nums =  Variable.get('map_geo_nums', deserialize_json=True)
+nome = Variable.get('petro_nome')
+nums =  Variable.get('petro_nums', deserialize_json=True)
 
 #Definição da DAG
 etl_dag = DAG (
-        'map_geo_etl', 
+        'petro_etl', 
         default_args = {
         "email":["abc@def.com"],#Alterar em produção
         "email_on_failure": False
@@ -89,10 +90,16 @@ fix_geom= PythonOperator(
     op_args= [bd_conn],
     dag=etl_dag)
 
+att_geoserver = PythonOperator(
+    task_id = 'p3m_att_geoserver',
+    python_callable = atualizar_geoserver,
+    dag = etl_dag
+    
+)
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>gravar_dados>>fix_geom# type: ignore
+branch_a>>gravar_dados>>fix_geom>>att_geoserver# type: ignore
 
 branch_b>>criar_link#type:ignore
 
