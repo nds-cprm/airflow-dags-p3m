@@ -48,15 +48,16 @@ url_data = Variable.get('url_data') #contém o endereço do serviço de acesso a
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
 
 #Definição da DAG
-etl_dag = DAG (
-        'p3m_etl', 
-        default_args = {
-        "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
-        "email_on_failure": False
-        },
-        start_date = datetime(2023, 8, 9),
-        schedule_interval = "0 1 * * 2,4,6",
-        catchup = False )
+etl_dag = DAG(
+    'p3m_etl', 
+    default_args = {
+        "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
+        "email_on_failure": True
+    },
+    start_date = datetime(2023, 8, 9),
+    schedule_interval = "0 2 * * 2,4,6",
+    catchup = False
+)
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
 pg_kwargs = {
