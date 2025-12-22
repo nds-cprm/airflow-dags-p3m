@@ -64,7 +64,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
     conn = PostgresHook(bd_conn)
 
     # database table and schema
-    engine = conn.get_sqlalachemy_engine()
+    engine = conn.get_sqlalchemy_engine()
     schema = "anm"
     table = "cfem_arrecadacao_ativa"
     pk_name = "id"
