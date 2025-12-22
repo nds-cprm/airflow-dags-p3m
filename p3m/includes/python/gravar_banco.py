@@ -70,7 +70,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
     pk_name = "id"
 
     # Gravação
-    in_parquet = kwargs["ti"].xcom_pull(task_id='cfem_read_table', key='return_value')
+    in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
     
     with engine.connect() as conn:
         to_sql_kwargs = dict(
