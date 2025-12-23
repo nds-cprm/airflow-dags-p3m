@@ -86,7 +86,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
         try: 
             with conn.begin():
                 logging.info("Esvaziando a tabela...")
-                conn.execute(text("TRUNCATE TABLE {schema}.{table};"))
+                conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
                 
                 logging.info("Carregando novos dados de CFEM...")
                 pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
