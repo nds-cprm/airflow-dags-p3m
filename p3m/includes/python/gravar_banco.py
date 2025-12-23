@@ -78,35 +78,34 @@ def gravar_csv_banco(bd_conn, **kwargs):
             con=conn, 
             schema=schema, 
             if_exists="replace",
-            index_label=pk_name
+            index_label=pk_name,
+            chunksize=2000,
         )
 
         try:
-            with conn.begin():
-                pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
-                logging.info("Tabela criada e conteúdo carregado")
+            trans = conn.begin()
+            pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
+            logging.info("Tabela criada e conteúdo carregado")
 
-                # TODO: Adicionar chave primária
-                conn.execute(text(f"ALTER TABLE {schema}.{table} ADD PRIMARY KEY ({pk_name});"))
-                logging.info("Chave primária criada")
-                conn.commit()
+            # TODO: Adicionar chave primária
+            conn.execute(text(f"ALTER TABLE {schema}.{table} ADD PRIMARY KEY ({pk_name});"))
+            logging.info("Chave primária criada")
+            trans.commit()
 
         except Exception as e:  # A tabela já existe
             # Cancela a transação anterior e remarca a operação como 'append'
-            conn.rollback()
+            trans.rollback()
             
             with conn.begin():
                 to_sql_kwargs["if_exists"] = "append"
-
                 logging.warning(str(e))
                 
                 # TODO: Adicionar regra para truncar a tabela
-                with conn.begin():
-                    logging.info("Esvaziando a tabela...")
-                    conn.execute(text("TRUNCATE TABLE {schema}.{table};"))
-                    
-                    logging.info("Carregando novos dados de CFEM...")
-                    pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
+                logging.info("Esvaziando a tabela...")
+                conn.execute(text("TRUNCATE TABLE {schema}.{table};"))
+                
+                logging.info("Carregando novos dados de CFEM...")
+                pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
 
     return True
     
