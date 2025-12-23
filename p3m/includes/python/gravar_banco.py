@@ -71,41 +71,29 @@ def gravar_csv_banco(bd_conn, **kwargs):
 
     # Gravação
     in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
+    write_ok = True
     
     with engine.connect() as conn:
         to_sql_kwargs = dict(
             name=table, 
             con=conn, 
             schema=schema, 
-            if_exists="replace",
+            if_exists="append",
             index_label=pk_name,
             chunksize=2000,
         )
 
-        try:
-            trans = conn.begin()
-            pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
-            logging.info("Tabela criada e conteúdo carregado")
-
-            # TODO: Adicionar chave primária
-            conn.execute(text(f"ALTER TABLE {schema}.{table} ADD PRIMARY KEY ({pk_name});"))
-            logging.info("Chave primária criada")
-            trans.commit()
-
-        except Exception as e:  # A tabela já existe
-            # Cancela a transação anterior e remarca a operação como 'append'
-            trans.rollback()
-            
+        try: 
             with conn.begin():
-                to_sql_kwargs["if_exists"] = "append"
-                logging.warning(str(e))
-                
-                # TODO: Adicionar regra para truncar a tabela
                 logging.info("Esvaziando a tabela...")
                 conn.execute(text("TRUNCATE TABLE {schema}.{table};"))
                 
                 logging.info("Carregando novos dados de CFEM...")
                 pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
 
-    return True
+        except Exception as e:            
+            logging.error(str(e))
+            write_ok = False
+
+    return write_ok
     
