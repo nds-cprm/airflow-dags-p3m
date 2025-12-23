@@ -1,8 +1,11 @@
-from pathlib import Path
 import pandas as pd
-from datetime import datetime
 import sqlalchemy
+
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from humps import decamelize
+from slugify import slugify
+from pathlib import Path
 
 cast_dict = {
     'Ano': sqlalchemy.types.INTEGER() ,
@@ -57,7 +60,12 @@ def convert_table(**kwargs):
         .rename(
             columns={"DataCriacao": "DataGeracaoCFEM"}
         )
-        .loc[lambda df: df["DataRecolhimentoCFEM"] >= (today - delta)]
+        .loc[
+            lambda df: df["DataRecolhimentoCFEM"] >= (today - delta)
+        ]
+        .rename(
+            columns=lambda col: slugify(decamelize(col), separator="_").replace("p_f", "pf") # decamelize não está funcionando em traduzir PF em pf (resulta em p_f)
+        )
     )
 
     out_parquet = temp_folder.joinpath("cfem_tratada.parquet")
@@ -65,31 +73,3 @@ def convert_table(**kwargs):
     data.to_parquet(out_parquet)
 
     return out_parquet.as_posix()
-        
-    # current_year=date.today()
-    # start = current_year - (relativedelta(years=10))
-
-    # td = relativedelta(years=1)
-    # year_count= start
-        
-    # while (year_count <= current_year):
-    #     if year_count == start:
-    #         dec_df = data.loc[data['Ano']== int(year_count.strftime("%Y"))]    
-    #     else:
-    #         new_df = data.loc[data['Ano']== int(year_count.strftime("%Y"))]
-    #         dec_df= pd.concat([dec_df,new_df])
-        
-    #     year_count  += td
-
-    # del new_df
-
-    # dec_df['processo_ano'] = (dec_df['Processo']+'/'+dec_df['AnoDoProcesso']).astype(str)
-
-    # dec_df = dec_df.dropna(subset=['Processo','AnoDoProcesso'])
-
-    # dec_df = dec_df.drop(dec_df[dec_df['Processo']=='0'].index)
-
-    # dec_df['QuantidadeComercializada'] = dec_df['QuantidadeComercializada'].str.replace(',', '.').astype(float)
-    # dec_df['ValorRecolhido'] = dec_df['ValorRecolhido'].str.replace(',', '.').astype(float)
-    
-    # dec_df.iloc[:,0:15].to_csv(f'{temp_folder}/cfem_tratada.csv',sep=';',index=False,header=hd_list,mode='w')
