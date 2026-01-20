@@ -39,7 +39,6 @@ cfem_dag = DAG (
         "email_on_failure": False
         },
         start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,
         template_searchpath = Variable.get('template_searchpath'))
 
