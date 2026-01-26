@@ -1,8 +1,9 @@
 import subprocess
 import logging
+import pandas as pd
 
-from airflow.hooks.base import BaseHook
-
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+from sqlalchemy import text
 
 LAYERS = [
     "TB_Processo",
@@ -20,7 +21,7 @@ task_logger = logging.getLogger("airflow.task")
 
 def gravar_banco(temp_dir,bd_conn):
 
-    conn = BaseHook.get_connection(bd_conn)
+    conn = PostgresHook.get_connection(bd_conn)
 
     dbname = conn.schema
     host = conn.host
@@ -41,6 +42,7 @@ def gravar_banco(temp_dir,bd_conn):
                 layer, 
                 "-lco",
                 "launder=no",
+                "-forceNullable",
                 "-progress",
                 "--config",
                 "PG_USE_COPY",
@@ -54,52 +56,44 @@ def gravar_banco(temp_dir,bd_conn):
         )
         if result.returncode != 0:
             task_logger.error(result.stderr)
-            exit -1#type:ignore
+            exit(-1)
         task_logger.info(result.stdout)
     return 0
 
-def gravar_csv_banco(temp_dir,bd_conn,ti):
+def gravar_csv_banco(bd_conn, **kwargs):
+    conn = PostgresHook(bd_conn)
 
-    a_path = ti.xcom_pull(key='a_path')
+    # database table and schema
+    engine = conn.get_sqlalchemy_engine()
+    schema = "anm"
+    table = "cfem_arrecadacao_ativa"
+    pk_name = "id"
 
-    conn = BaseHook.get_connection(bd_conn)
-
-    dbname = conn.schema
-    host = conn.host
-    password = conn.password
-    user = conn.login
-    port = conn.port
-    active_schema = "geoserver" #Substituir o nome do schema onde serão processados e salvo os dados    
-
-    task_logger.info('Método csv')
-    result = subprocess.run(
-        [
-            "ogr2ogr",
-            "-f",
-            "PostgreSQL",
-            f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
-            f'{temp_dir}/cfem_tratada.csv',
-            '-nln',
-            'cfem_arrecadacao_ativa',
-            '-oo',
-            'SEPARATOR=AUTO',
-            '-oo',
-            'AUTODETECT_TYPE=YES',
-            "-lco",
-            "FID=gid",
-            "-progress",
-            "--config",
-            "PG_USE_COPY",
-            "YES",
-            "--config",
-            "OGR_TRUNCATE",
-            "YES"
-        ],
-        capture_output=True,
-        text=True
+    # Gravação
+    in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
+    write_ok = True
+    
+    with engine.connect() as conn:
+        to_sql_kwargs = dict(
+            name=table, 
+            con=conn, 
+            schema=schema, 
+            if_exists="append",
+            index_label=pk_name,
+            chunksize=2000,
         )
 
-    if result.returncode != 0:
-        task_logger.info(result.stdout)
-        task_logger.error(result.stderr)
-        exit(-1)
+        try: 
+            with conn.begin():
+                logging.info("Esvaziando a tabela...")
+                conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
+                
+                logging.info("Carregando novos dados de CFEM...")
+                pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
+
+        except Exception as e:            
+            logging.error(str(e))
+            write_ok = False
+
+    return write_ok
+    

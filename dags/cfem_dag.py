@@ -4,7 +4,13 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.python import BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 #importando módulo do postgresoperator através do provider Postgres
-from airflow.providers.postgres.operators.postgres import PostgresOperator
+try:
+    # importando módulo do postgresoperator através do provider Postgres
+    # postgres-provider < 6.0.0
+    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
+except ImportError:
+    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+
 from airflow import DAG
 #caminho relativo dos módulos .py
 from includes.python.consumo import consumir_dado_cfem
@@ -39,8 +45,23 @@ cfem_dag = DAG (
         "email_on_failure": False
         },
         start_date = datetime(2023, 5, 17),#Ajustar em produção
+        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,
-        template_searchpath = Variable.get('template_searchpath'))
+        template_searchpath= '/opt/airflow/includes'
+    #     template_searchpath = Variable.get('template_searchpath')
+    )
+
+# Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
+pg_kwargs = {}
+
+if SQLExecuteQueryOperator.__name__ == 'PostgresOperator':
+    pg_kwargs.update({
+        'postgres_conn_id': bd_conn,  # Conexão com o banco de dados
+    })
+else:
+    pg_kwargs.update({
+        'conn_id': bd_conn,  # Conexão com o banco de dados
+    })
 
 #Definição das tasks que compõem a dag
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
@@ -85,28 +106,28 @@ read_table = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'cfem_gravar_dados',
     python_callable = gravar_csv_banco,
-    op_args=[d_folder,bd_conn],
+    op_args=[bd_conn],
     dag=cfem_dag)
 
 
-vacuum = PostgresOperator(
+vacuum = SQLExecuteQueryOperator(
     task_id='cfem_vacuum_atl',
-    postgres_conn_id = bd_conn,
-    sql= "vacuum_cfem.sql",
+    sql= "sql/vacuum_cfem.sql",
     autocommit=True,
-    dag=cfem_dag)
+    dag=cfem_dag,
+    **pg_kwargs)
 
-atualizar_index = PostgresOperator(
+atualizar_index = SQLExecuteQueryOperator(
     task_id='cfem_reindex',
-    postgres_conn_id= bd_conn,
-    sql="reindex_cfem.sql",
-    dag=cfem_dag)
+    sql="sql/reindex_cfem.sql",
+    dag=cfem_dag,
+    **pg_kwargs)
 
-atualizar_mvw_minas=PostgresOperator(
+atualizar_mvw_minas=SQLExecuteQueryOperator(
     task_id='cfem_atualizar_mvwminas',
-    postgres_conn_id = bd_conn,
-    sql="atualizar_mvw_minas_atv.sql",
-    dag=cfem_dag)
+    sql="sql/atualizar_mvw_minas_atv.sql",
+    dag=cfem_dag,
+    **pg_kwargs)
 
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 

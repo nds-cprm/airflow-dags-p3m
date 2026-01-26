@@ -2,6 +2,6 @@
 --executada após atualização
 --comando vacuum não pode ser utilizado em bloco
 
-vacuum (verbose,analyze) geoserver.cfem_arrecadacao_ativa;
+vacuum (verbose,analyze) anm.cfem_arrecadacao_ativa;
 
     
