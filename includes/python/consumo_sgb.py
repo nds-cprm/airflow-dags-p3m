@@ -15,8 +15,14 @@ task_logger = logging.getLogger("airflow.task")
 def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str]) -> str:
     lista = []
     hashes = []
+    task_logger.info('-'*35)
+    task_logger.info(num)
+    task_logger.info('-'*35)
+    
     for i,a in num.items():
         task_logger.info(f'Camada {nome} {i}')
+        task_logger.info(f'{nome}{a}')
+
         try:
             params_stats = {
         "where": "1=1",

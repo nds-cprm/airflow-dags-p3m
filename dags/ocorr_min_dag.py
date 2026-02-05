@@ -12,6 +12,7 @@ from includes.python.gravar_banco_sgb import gravar_banco_sgb as gravar_banco
 from includes.python.checksum_sgb import checkhash
 from includes.python.criar_link_sgb import simbolic_link
 from includes.python.tratamento_geom import tratamento_geom
+from includes.python.att_cache import att_geoserver
 
 from airflow.models import Variable  # type: ignore
 
@@ -89,10 +90,15 @@ fix_geom= PythonOperator(
     op_args= [bd_conn],
     dag=etl_dag)
 
+att_cache= PythonOperator(
+    task_id='atualizar_geoserver',
+    python_callable = att_geoserver,
+    op_kwargs={'store': 'p3m'},
+    dag=etl_dag)
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>gravar_dados>>fix_geom# type: ignore
+branch_a>>gravar_dados>>fix_geom>>att_cache# type: ignore
 
 branch_b>>criar_link#type:ignore
 

@@ -10,22 +10,21 @@
     "url_data": "https://geo.anm.gov.br/portal/sharing/rest/content/items/758fcdf1df154c0a891c53414c63b9c9/data",
     "leg_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_XXX000/FeatureServer/0/query",
     "leg_nome": "cprm_lev_litostrat",
-    "leg_nums": {"25":"_25000_a", "50":"_50000_a","1000":"_1000000_a"}, 
+    "leg_nums": {"25":"_25000_a", "50":"_50000_a","100":"_100000_a","250":"_250000_a", "1000":"_1000000_a"}, 
     "map_geo_data": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/XXX/query",
     "map_geo_nome": "cprm_map_geo",
-    "map_geo_nums": {"5":"_25k_a","4":"_50k_a", "3":"_100k_a","2":"_250k_a"},
+    "map_geo_nums": {"5":"_25k","4":"_50k", "3":"_100k","2":"_250k", "1": "_1m"},
     "petro_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/FeatureServer/0/query",
-    "petro_nome":"cprm_petrogf_a", 
+    "petro_nome":"cprm_petrogf", 
     "petro_nums": {"":""},
     "afloram_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/FeatureServer/0/query",
-    "afloram_nome": "cprm_aflor_geo_a",
+    "afloram_nome": "cprm_aflor_geo",
     "afloram_nums": {"":""},
     "ocor_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/FeatureServer/0/query",
-    "ocor_nome": "cprm_ocorr_min_a",
+    "ocor_nome": "cprm_ocorr_min",
     "ocor_nums": {"":""},
     "geocron_data":"https://geoportal.sgb.gov.br/server/rest/services/geologia/geocronologia/FeatureServer/0/query",
-    "geocron_nome": "cprm_geocron2345_a",
+    "geocron_nome": "cprm_geocron",
     "geocron_nums": {"":""}
 
-    
 }

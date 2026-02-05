@@ -11,18 +11,18 @@ Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais
 
 from datetime import datetime
 #Operadores padrão
-from airflow.operators.python import PythonOperator, BranchPythonOperator
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator # type: ignore
+from airflow.operators.empty import EmptyOperator # type: ignore
 
 
 try:
     # importando módulo do postgresoperator através do provider Postgres
     # postgres-provider < 6.0.0
-    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
+    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator #type: ignore
 except ImportError:
-    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator # type: ignore
 
-from airflow import DAG
+from airflow import DAG # type: ignore
 #caminho relativo dos módulos .py
 from includes.python.consumo import consumir_dado
 from includes.python.logs import log_inativos,log_duplicados,log_geom
@@ -31,7 +31,7 @@ from includes.python.descompactar import descompactar as _descompactar
 from includes.python.checksum import checkhash
 from includes.python.criar_link import simbolic_link
 #Modulo para uso das variaveis registradas
-from airflow.models import Variable
+from airflow.models import Variable #type:ignore
 
 def make_branch(ti):
     r=ti.xcom_pull(task_ids='p3m_etl_checksum')

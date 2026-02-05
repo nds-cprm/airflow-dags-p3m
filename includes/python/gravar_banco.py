@@ -78,7 +78,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
             name=table, 
             con=conn, 
             schema=schema, 
-            if_exists="append",
+            if_exists="replace",
             index_label=pk_name,
             chunksize=2000,
         )

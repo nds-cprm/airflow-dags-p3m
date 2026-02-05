@@ -12,11 +12,12 @@ from includes.python.gravar_banco_sgb import gravar_banco_sgb as gravar_banco
 from includes.python.checksum_sgb import checkhash
 from includes.python.criar_link_sgb import simbolic_link
 from includes.python.tratamento_geom import tratamento_geom
+from includes.python.att_cache import att_geoserver
 
 from airflow.models import Variable  # type: ignore
 
 def make_branch(ti):
-    r=ti.xcom_pull(task_ids='p3m_etl_checksum')
+    r=ti.xcom_pull(task_ids='Checksum_SGB')
     if r==1:
        return 'p3m_branch_a'
     else:
@@ -43,7 +44,7 @@ etl_dag = DAG (
 #Definição das tasks que compõem a dag
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
 consumo_dados = PythonOperator(
-    task_id = 'p3m_etl_cd_mg',
+    task_id = 'Consumir_Dado_Sgb',
     python_callable = consumir_dado,
     op_kwargs={'url': url_data, 'temp_dir': d_folder
                ,'nome': nome, 'num': nums},
@@ -52,7 +53,7 @@ consumo_dados = PythonOperator(
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
 #{{prev_start_date_success | ds_nodash}} macro que retorna a data de inicialização da utlima utilização bem sucedida para identificação do diretorio e comparação das bases
 check_sum = PythonOperator(
-    task_id='p3m_etl_checksum',
+    task_id='Checksum_SGB',
     python_callable=checkhash,
     provide_context=True,
     op_kwargs={'dir':d_folder},
@@ -77,22 +78,28 @@ criar_link = PythonOperator(
 )
 
 gravar_dados = PythonOperator(
-    task_id = 'p3m_etl_gravar_dados',
+    task_id = 'Gravar_Dados_SGB',
     python_callable = gravar_banco,
     op_args=[bd_conn],
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
 fix_geom= PythonOperator(
-    task_id='p3m_fix_geom',
+    task_id='Fix_Geom_SGB',
     python_callable = tratamento_geom,
     op_args= [bd_conn],
+    dag=etl_dag)
+
+att_cache= PythonOperator(
+    task_id='atualizar_geoserver',
+    python_callable = att_geoserver,
+    op_kwargs={'store': 'p3m'},
     dag=etl_dag)
 
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>gravar_dados>>fix_geom# type: ignore
+branch_a>>gravar_dados>>fix_geom>>att_cache# type: ignore
 
 branch_b>>criar_link#type:ignore
 
