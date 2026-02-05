@@ -11,26 +11,27 @@ Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais
 
 from datetime import datetime
 #Operadores padrão
-from airflow.operators.python import PythonOperator, BranchPythonOperator
-from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator # type: ignore
+from airflow.operators.empty import EmptyOperator # type: ignore
+
 
 try:
     # importando módulo do postgresoperator através do provider Postgres
     # postgres-provider < 6.0.0
-    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
+    from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator #type: ignore
 except ImportError:
-    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+    from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator # type: ignore
 
-from airflow import DAG
+from airflow import DAG # type: ignore
 #caminho relativo dos módulos .py
-from p3m.includes.python.consumo import consumir_dado
-from p3m.includes.python.logs import log_inativos,log_duplicados,log_geom
-from p3m.includes.python.gravar_banco import gravar_banco
-from p3m.includes.python.descompactar import descompactar as _descompactar
-from p3m.includes.python.checksum import checkhash
-from p3m.includes.python.criar_link import simbolic_link
+from includes.python.consumo import consumir_dado
+from includes.python.logs import log_inativos,log_duplicados,log_geom
+from includes.python.gravar_banco import gravar_banco
+from includes.python.descompactar import descompactar as _descompactar
+from includes.python.checksum import checkhash
+from includes.python.criar_link import simbolic_link
 #Modulo para uso das variaveis registradas
-from airflow.models import Variable
+from airflow.models import Variable #type:ignore
 
 def make_branch(ti):
     r=ti.xcom_pull(task_ids='p3m_etl_checksum')
@@ -52,11 +53,12 @@ etl_dag = DAG(
     'p3m_etl', 
     default_args = {
         "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
-        "email_on_failure": True
+        "email_on_failure": False
     },
     start_date = datetime(2023, 8, 9),
     schedule_interval = "0 2 * * 2,4,6",
-    catchup = False
+    catchup = False,
+    template_searchpath= '/opt/airflow/includes'
 )
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.

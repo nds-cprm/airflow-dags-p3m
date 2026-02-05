@@ -1,0 +1,1 @@
+sudo chown -R $USER:$USER ~/Documents/projetos/P3M/fase3/p3m_airflow

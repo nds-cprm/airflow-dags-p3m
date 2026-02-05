@@ -161,3 +161,6 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+#CFEM
+**/CFEM_Arrecadacao.csv
