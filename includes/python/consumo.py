@@ -1,10 +1,10 @@
-import requests
+import requests #type: ignore
 import logging
 from os import path,makedirs
 import os
 from datetime import date
 import hashlib
-import urllib3
+import urllib3 #type: ignore
 
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
