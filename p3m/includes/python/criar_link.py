@@ -28,7 +28,7 @@ def simbolic_link(ti):
                 exit -1#type:ignore
             return 0
     #Em caso padrõa, execução anterior possui uma base, criação do link para o arquivo gdb.zip    
-    result = subprocess.run("ln -s "
+    result = subprocess.run("ln -sf "
                             +p_path+"/DBANM.gdb.zip "
                             +f'{a_path}/redirec_base.txt'
                             " && rm " f'{a_path}/DBANM.gdb.zip',
