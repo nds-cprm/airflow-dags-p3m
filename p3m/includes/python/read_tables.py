@@ -57,15 +57,23 @@ def convert_table(**kwargs):
             ["Ano", "Mês", "AnoDoProcesso"],
             axis="columns"
         )
-        .rename(
-            columns={"DataCriacao": "DataGeracaoCFEM"}
-        )
+
         .loc[
             lambda df: df["DataRecolhimentoCFEM"] >= (today - delta)
         ]
         .rename(
-            columns=lambda col: slugify(decamelize(col), separator="_").replace("p_f", "pf") # decamelize não está funcionando em traduzir PF em pf (resulta em p_f)
-        )
+            columns=lambda col: slugify(decamelize(col), separator="_").replace("p_f", "pf") # decamelize não está funcionando em traduzir PF em pf (resulta em p_f) -> nome do campo original: 'tipo-p-f-pj'
+        ).rename(
+    columns={
+             "processo": "processo_ano",
+             "codigo_municipio": "codigomunicipio",
+             "quantidade_comercializada":"qt_comercializada",
+             "unidade_de_medida": "un_medida",
+             "valor_recolhido": "vl_recolhido",
+             "DataGeracaoCFEM": "datacriacao",
+             "DataRecolhimentoCFEM": "data_recolimento_cfem"
+             }
+)
     )
 
     out_parquet = temp_folder.joinpath("cfem_tratada.parquet")
