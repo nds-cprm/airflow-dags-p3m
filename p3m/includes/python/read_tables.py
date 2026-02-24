@@ -70,8 +70,8 @@ def convert_table(**kwargs):
              "quantidade_comercializada":"qt_comercializada",
              "unidade_de_medida": "un_medida",
              "valor_recolhido": "vl_recolhido",
-             "DataGeracaoCFEM": "datacriacao",
-             "DataRecolhimentoCFEM": "data_recolimento_cfem"
+             "data_geracao_cfem": "data_criacao",
+             "DataRecolhimentoCFEM": "data_recolhimento_cfem"
              }
 )
     )
