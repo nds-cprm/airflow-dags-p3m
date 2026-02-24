@@ -20,7 +20,7 @@ def simbolic_link(**kwargs):
         link = os.path.join(p_path,i)
         task_logger.info(link)
         if os.path.islink(link):
-            result = subprocess.run("ln -s "
+            result = subprocess.run("ln -sf "
                             +link+" "
                             +f'{a_path}/redirec_base.txt'
                             " && rm " f'{a_path}/DBANM.gdb.zip',
