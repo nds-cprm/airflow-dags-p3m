@@ -25,7 +25,7 @@ def convert_table(**kwargs):
     temp_folder = Path(kwargs['temp_folder'])
 
     # CSV da ANM
-    csv_file = Path(kwargs["ti"].xcom_pull(key='a_path')).joinpath("CFEM_Arrecadacao.csv")
+    csv_file = Path(kwargs["ti"].xcom_pull(key='a_path'))
 
     # Controle para pegar os últimos 10 anos
     today = datetime.now()

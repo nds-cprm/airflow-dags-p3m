@@ -13,7 +13,7 @@ except ImportError:
 
 from airflow import DAG
 #caminho relativo dos módulos .py
-from p3m.includes.python.consumo import consumir_dado_cfem
+from p3m.includes.python.consumo import consumir_dado
 from p3m.includes.python.gravar_banco import gravar_csv_banco
 from p3m.includes.python.checksum import checkhash
 from p3m.includes.python.criar_link import simbolic_link
@@ -66,8 +66,8 @@ else:
 #Task que fazer o download e salva o arquivo gdb na pasta de backup
 consumo_dados = PythonOperator(
     task_id = 'cfem_consumo_dados',
-    python_callable = consumir_dado_cfem,
-    op_args=[url_data,d_folder],
+    python_callable = consumir_dado,
+    op_args=[url_data , d_folder, "CFEM_Arrecadacao.csv"],
     dag=cfem_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
@@ -76,7 +76,7 @@ check_sum = PythonOperator(
     task_id='cfem_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir':d_folder},
+    # op_kwargs={'dir':d_folder},
     dag=cfem_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
