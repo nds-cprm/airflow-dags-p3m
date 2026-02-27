@@ -69,13 +69,12 @@ def gravar_csv_banco(bd_conn, **kwargs):
 
     # database table and schema
     engine = conn.get_sqlalchemy_engine()
-    schema = "anm"
+    schema = "geoserver"  # FIXME: a tabela de cfem deverá estar no schema anm, e não no geoserver
     table = "cfem_arrecadacao_ativa"
     pk_name = "id"
 
     # Gravação
     in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
-    write_ok = True
     
     with engine.connect() as conn:
         to_sql_kwargs = dict(
@@ -89,7 +88,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
 
         try: 
             with conn.begin():
-                logging.info("Esvaziando a tabela...")
+                logging.info(f"Esvaziando a tabela <{schema}.{table}>...")
                 conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
                 
                 logging.info("Carregando novos dados de CFEM...")
@@ -97,7 +96,4 @@ def gravar_csv_banco(bd_conn, **kwargs):
 
         except Exception as e:            
             logging.error(str(e))
-            write_ok = False
-
-    return write_ok
-    
+            exit(-1)    
