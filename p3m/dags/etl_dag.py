@@ -32,9 +32,10 @@ from p3m.includes.python.criar_link import simbolic_link
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
+
 def make_branch(ti):
-    r=ti.xcom_pull(task_ids='p3m_etl_checksum')
-    if r==1:
+    r = ti.xcom_pull(task_ids='p3m_etl_checksum')
+    if r:
        return 'p3m_branch_a'
     else:
         return 'p3m_branch_b'
@@ -77,7 +78,7 @@ else:
 consumo_dados = PythonOperator(
     task_id = 'p3m_etl_consumo_dados',
     python_callable = consumir_dado,
-    op_args=[url_data,d_folder],
+    op_args=[url_data, d_folder, 'DBANM.gdb.zip'],
     dag=etl_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
@@ -86,7 +87,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir':d_folder},
+    # op_kwargs={'dir':d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
@@ -107,12 +108,12 @@ criar_link = PythonOperator(
     dag=etl_dag
 )
 # Task que extrai os arquivos do zip na pasta temporaria
-descompactar = PythonOperator(
-    task_id='p3m_etl_descompactar',
-    python_callable=_descompactar,
-    op_args=[d_folder],
-    dag=etl_dag
-)
+# descompactar = PythonOperator(
+#     task_id='p3m_etl_descompactar',
+#     python_callable=_descompactar,
+#     op_args=[d_folder],
+#     dag=etl_dag
+# )
 
 # Task para salvar os dados no banco de dados
 gravar_dados = PythonOperator(
@@ -203,7 +204,8 @@ atl_cards=SQLExecuteQueryOperator(
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+# branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+branch_a>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 

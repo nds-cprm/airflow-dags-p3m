@@ -5,37 +5,25 @@ import os
 task_logger = logging.getLogger("airflow.task")
 
 #Função que cria o link simbólico em caso de execução da branch_b, e direciona o backup da pasta da execução atual para da ultima excução com base igual
-def simbolic_link(ti):
-    a_path=ti.xcom_pull(key='a_path')#caminho do diretorio de backup da execução atual
-    p_path=ti.xcom_pull(key='p_path')#caminho do diretorio de backup da base correspondente igual a atual
+def simbolic_link(**kwargs):
+    # Task atual
+    current_ti = kwargs["ti"]
+    current_gdb_filename = current_ti.xcom_pull(key='a_path')    
 
-    #Em caso de falta de atualização recorrente a ultima execução anterior também pode ter gerado um link logo, o bloco itera os itens da pasta e verifica a existência de um link
-    #em caso da existência de um link o link atual faz referência ao link anterior para se construir o lastro das bases
-    itens=os.listdir(p_path)
-    for i in itens:
-        task_logger.info(i)
-        link = os.path.join(p_path,i)
-        task_logger.info(link)
-        if os.path.islink(link):
-            result = subprocess.run("ln -sf "
-                            +link+" "
-                            +f'{a_path}/redirec_base.txt'
-                            " && rm " f'{a_path}/DBANM.gdb.zip',
-                            shell=True,text=True, capture_output=True)
-            
-            if result.returncode != 0:
-                task_logger.error(result.stderr)
-                exit -1#type:ignore
-            return 0
-    #Em caso padrõa, execução anterior possui uma base, criação do link para o arquivo gdb.zip    
-    result = subprocess.run("ln -sf "
-                            +p_path+"/DBANM.gdb.zip "
-                            +f'{a_path}/redirec_base.txt'
-                            " && rm " f'{a_path}/DBANM.gdb.zip',
-                            shell=True,text=True, capture_output=True)
-    if result.returncode != 0:
-        task_logger.error(result.stderr)
-        exit -1#type:ignore
+    # Task anterior
+    last_ti = current_ti.get_previous_ti()
+    last_gdb_filename = last_ti.xcom_pull(key='a_path')
 
-    task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
-    task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base '+p_path)
+    if not current_gdb_filename == last_gdb_filename:
+        # Exclui o arquivo atual e cria um link simólico entre o anterior e o atual        
+        if not os.path.exists(last_gdb_filename):
+            raise Exception(f"Arquivo {last_gdb_filename} não existe ou foi excluído")
+        
+        os.remove(current_gdb_filename)
+        os.symlink(last_gdb_filename, current_gdb_filename)
+
+        task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
+        task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base '+p_path)
+
+    else:
+        task_logger.warning("Os arquivos são iguais e as execuções foram no mesmo dia. Não há necessidade de criar link simbólico")

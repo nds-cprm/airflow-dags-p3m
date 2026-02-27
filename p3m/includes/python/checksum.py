@@ -6,33 +6,27 @@ import subprocess
 task_logger = logging.getLogger("airflow.task")
 
 #Função que gera o hash do base/arquivo utilizado na ultima execução e compara com a atual para avaliar necessidade da execução da etl completa
-def checkhash(ti,**kwargs):
+def checkhash(**kwargs):
+    # Task atual
+    current_ti = kwargs["ti"]
+    current_a_hash = current_ti.xcom_pull(key='a_hash') #Acessando resultado do hash da excução atual enviado na xcom
+    task_logger.info(f"Hash SHA256 da eecução atual: {current_a_hash}")
 
-    temp = kwargs['dir'] #pasta de backups
-    prev = kwargs['prev_start_date_success'] #data da ultima execução bem sucedida para construir caminho de ultima base para comparar hash 
-    a_hash= ti.xcom_pull(key='a_hash') #Acessando resultado do hash da excução atual enviado na xcom
-    task_logger.info(a_hash)
-    
-    #Em caso de primeira execução da DAG a função retorna valor correspondente a execução completa
-    if not prev:
-        return 1        
+    # Task anterior
+    last_ti = current_ti.get_previous_ti()
+    last_a_hash = None    
 
-    p_path=os.path.join(temp,f'{prev.year}',f'{prev.month:02d}',f'{prev.day:02d}') # construção do caminho para a base previ
-
-    ti.xcom_push(key='p_path',value=p_path) #xcom que envia o arquivo previo para ser utilizado
-
-    #Lendo o hash da base da ultima execução apra comparação
-    result=subprocess.run('cat ' + p_path +'/DBANM.gdb.zip.sha256',capture_output=True,text=True,shell=True)
-    p_hash=result.stdout
-    task_logger.info(p_hash)
+    if last_ti:
+        last_a_hash = last_ti.xcom_pull(key='a_hash')
+        if last_a_hash:
+            task_logger.info(f"Hash SHA256 da execução anterior: {current_a_hash}")
         
-    #comparação dos hash e retorno para condicional para ser utilizado na task de branch
-    if a_hash==p_hash:
-        task_logger.info('Não houve atualização da base, processo de ETL será resumido')
+    # comparação dos hash e retorno para condicional para ser utilizado na task de branch
+    update_gdb = current_a_hash != last_a_hash
 
-        return 0
-        
-    else:
+    if update_gdb:
         task_logger.info('Base atualizada, processo de ETL ocorrerá normalmente')
-
-        return 1
+    else:
+        task_logger.info('Não houve atualização da base, processo de ETL será resumido')
+    
+    return update_gdb
