@@ -23,7 +23,7 @@ def simbolic_link(**kwargs):
         os.symlink(last_gdb_filename, current_gdb_filename)
 
         task_logger.info('Como não houve atualização da base desde a ultima execução, a execução do dia atual possui os dados equivalentes da anterior')
-        task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base '+p_path)
+        task_logger.info('Para otimizar o sistema de backup a base atual não será duplicada, foi criado um link simbólico direcionando para base ' + last_gdb_filename)
 
     else:
         task_logger.warning("Os arquivos são iguais e as execuções foram no mesmo dia. Não há necessidade de criar link simbólico")
