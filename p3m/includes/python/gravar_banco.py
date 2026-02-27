@@ -21,7 +21,7 @@ task_logger = logging.getLogger("airflow.task")
 
 def gravar_banco(temp_dir,bd_conn):
 
-    conn = BaseHook.get_connection(bd_conn)
+    conn = PostgresHook.get_connection(bd_conn)
 
     dbname = conn.schema
     host = conn.host
