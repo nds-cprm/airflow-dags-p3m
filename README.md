@@ -12,6 +12,16 @@ Projeto de Engenharia de Dados utilizando Airflow como orquestrador de etl's.
 DAGs do P3M
 
 Para implementação do projeto corretamente são neccessárias as configuraçãos de alguns recursos do Airflow 
+
+## Como colocar as dags no AIRFLOW__CORE__DAGS_FOLDER, a partir de um repositório GIT
+``` bash
+# Importante: o diretório de saída do repositório precisa ser 'p3m', por causa das definições de módulos destes scripts. 
+# O Airflow adiciona o diretório AIRFLOW__CORE__DAGS_FOLDER como um PYTHONPATH
+git clone https://github.com/nds-cprm/airflow-dags-p3m.git p3m
+cd p3m
+git checkout <nome da branch>
+```
+
 # Configuração de conexões e variables
 
 -Aqui serão listadas as conexões e variáveis utilizadas para operação padrão do projeto P3M 
