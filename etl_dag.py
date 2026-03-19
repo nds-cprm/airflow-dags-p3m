@@ -53,7 +53,7 @@ etl_dag = DAG(
     'p3m_etl', 
     default_args = {
         "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
-        "email_on_failure": True
+        "email_on_failure": False
     },
     start_date = datetime(2023, 8, 9),
     schedule_interval = "0 2 * * 2,4,6",
