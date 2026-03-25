@@ -57,3 +57,5 @@ def consumir_dado(url, temp_dir, out_file, **kwargs):
             task_logger.error('Arquivo não-baixado')
             task_logger.error(f'Status: {response.status_code}')
             exit(-1)
+
+
