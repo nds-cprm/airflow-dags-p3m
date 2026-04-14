@@ -130,7 +130,7 @@ atualizar_mvw_minas=SQLExecuteQueryOperator(
 
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
+consumo_dados>>check_sum>>branching>>[branch_a,branch_b] #type:ignore
 
 branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_mvw_minas # type: ignore
 

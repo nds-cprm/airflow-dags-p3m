@@ -1,10 +1,28 @@
 {
     "cfem_data": "https://app.anm.gov.br/DadosAbertos/ARRECADACAO/CFEM_Arrecadacao.csv",
     "cfem_folder": "home/sysadmin/temp_folder/cfem",
-    "column_names": "['ano', 'mes', 'processo', 'anodoprocesso', 'tipo_pf_pj', 'cpf_cnpj', 'substancia', 'uf', 'codigomunicipio', 'municipio', 'qt_comercializada', 'unidadedemedida', 'vl_recolhido', 'datacriacao','processo_ano']",
+    "column_names": ["ano", "mes", "processo", "anodoprocesso", "tipo_pf_pj", "cpf_cnpj", "substancia", "uf", "codigomunicipio", "municipio", "qt_comercializada", "unidadedemedida", "vl_recolhido", "datacriacao", "processo_ano"],
     "d_folder": "home/sysadmin/temp_folder",
     "p3m_conn": "p3m_dgti",
+    "p3m_refac": "p3m_refac",
     "p3m_teste": "p3m_teste",
-    "p3m_layers": "p3m_layers"
-
+    "p3m_layers": "p3m_layers",
+    "nds": {
+        "processos_minerarios": {
+            "url": "https://dadosabertos.anm.gov.br/SIGMINE/PROCESSOS_MINERARIOS/BRASIL.zip",
+            "files": ["BRASIL.shp"]
+        },
+        "microdados_scm": {
+            "url": "https://dadosabertos.anm.gov.br/SCM/microdados/microdados-scm.zip",
+            "files": [
+                "Processo.txt",
+                "ProcessoPessoa.txt",
+                "ProcessoEvento.txt",
+                "ProcessoMunicipio.txt",
+                "Pessoa.txt",
+                "ProcessoSubstancia.txt"
+            ]
+        }
+    },
+    "out_file": "DBANM.gdb"
 }

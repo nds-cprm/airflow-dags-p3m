@@ -23,7 +23,7 @@ except ImportError:
 
 from airflow import DAG
 #caminho relativo dos módulos .py
-from p3m.includes.python.consumo import consumir_dado
+from p3m.includes.python.consumo import ingest_to_gdb as consumir_dado
 from p3m.includes.python.logs import log_inativos,log_duplicados,log_geom
 from p3m.includes.python.gravar_banco import gravar_banco
 from p3m.includes.python.descompactar import descompactar as _descompactar
@@ -45,8 +45,9 @@ def make_branch(ti):
 #Em caso de necessidade substituir as variáveis e o valores pelas criadas pelo usuário no UI
 
 bd_conn = Variable.get('p3m_conn') #Conexão com banco de dados da aplicação
-url_data = Variable.get('url_data') #contém o endereço do serviço de acesso ao arquivo gdb
+url_data = Variable.get('nds', deserialize_json = True) #contém o endereço do serviço de acesso ao arquivo gdb
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
+out_file = Variable.get('out_file')
 
 #Definição da DAG
 etl_dag = DAG(
@@ -56,7 +57,7 @@ etl_dag = DAG(
         "email_on_failure": False
     },
     start_date = datetime(2023, 8, 9),
-    schedule_interval = "0 2 * * 2,4,6",
+    schedule_interval = None, #"0 2 * * 2,4,6",
     catchup = False
 )
 
@@ -78,7 +79,7 @@ else:
 consumo_dados = PythonOperator(
     task_id = 'p3m_etl_consumo_dados',
     python_callable = consumir_dado,
-    op_args=[url_data, d_folder, 'DBANM.gdb.zip'],
+    op_args=[url_data, d_folder, out_file],
     dag=etl_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
@@ -205,7 +206,7 @@ atl_cards=SQLExecuteQueryOperator(
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 

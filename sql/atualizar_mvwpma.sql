@@ -4,3 +4,8 @@
 refresh materialized view geoserver.mvw_processos_minerarios_ativos;
 
 reindex (verbose) table geoserver.mvw_processos_minerarios_ativos;
+
+
+refresh materialized view geoserver.mvw_pma_agrupado;
+
+reindex (verbose) table geoserver.mvw_pma_agrupado;

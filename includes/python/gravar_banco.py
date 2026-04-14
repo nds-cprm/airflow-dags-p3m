@@ -1,6 +1,7 @@
 import subprocess
 import logging
 import pandas as pd
+import psycopg2
 
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from sqlalchemy import text
@@ -12,9 +13,7 @@ LAYERS = [
     "TB_ProcessoMunicipio",
     "TB_Pessoa",
     "TB_ProcessoSubstancia",
-    "FC_ProcessoAtivo",
-    "FC_Disponibilidade",
-    "FC_Arrendamento"
+    "FC_ProcessoTotal"
 ]
 
 task_logger = logging.getLogger("airflow.task")
@@ -34,6 +33,33 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
 
     for layer in LAYERS:
         # TODO: Trocar por PyGDAL -> Conflita versões de python
+        #----------------------------
+        # TODO: 
+        task_logger.info('conn 1')
+        conn = psycopg2.connect(
+            host = host,
+            port = port,
+            dbname = dbname,
+            user= user,
+            password = password
+        )
+        task_logger.info('conn 2')
+        conn.autocommit = True
+        cur = conn.cursor()
+        sql_truncate = f'TRUNCATE TABLE "{active_schema}"."{layer}" '
+        task_logger.info('conn 3')
+
+        try: 
+            cur.execute(sql_truncate)
+            task_logger.info(f"Camada {active_schema}.{layer} truncada")
+            task_logger.info('conn 4')
+        except Exception as e:
+            task_logger.info(f"Erro ao truncar {active_schema}.{layer}")
+            task_logger.info(f'{e} -> {e.__class__}')
+        finally:
+            cur.close()
+            conn.close()
+            task_logger.info('conn 4')
         result = subprocess.run(
             [
                 "ogr2ogr",
@@ -42,20 +68,19 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
                 f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
                 out_gdb,
                 layer, 
+                "-lco", "TRUNCATE=YES",
                 "-lco",
                 "launder=no",
                 "-forceNullable",
                 "-progress",
                 "--config",
                 "PG_USE_COPY",
-                "YES",
-                "--config",
-                "OGR_TRUNCATE",
                 "YES"
             ],
             capture_output=True,
             text=True
         )
+        task_logger.info('conn 5')
         if result.returncode != 0:
             task_logger.error(result.stderr)
             exit(-1)
