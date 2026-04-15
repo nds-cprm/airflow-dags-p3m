@@ -2,9 +2,9 @@ import subprocess
 import logging
 import pandas as pd
 import psycopg2
-
+from sqlalchemy import text, create_engine
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from sqlalchemy import text
+
 
 LAYERS = [
     "TB_Processo",
@@ -90,35 +90,38 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
     return 0
 
 def gravar_csv_banco(bd_conn, **kwargs):
-    conn = PostgresHook(bd_conn)
+    hook = PostgresHook(postgres_conn_id=bd_conn)    
 
-    # database table and schema
-    engine = conn.get_sqlalchemy_engine()
-    schema = "geoserver"  # FIXME: a tabela de cfem deverá estar no schema anm, e não no geoserver
+    raw = hook.get_connection(bd_conn)
+    engine = create_engine(
+        f"postgresql+psycopg2://{raw.login}:{raw.password}"
+        f"@{raw.host}:{raw.port or 5432}/{raw.schema}"
+    )
+
+    schema = "geoserver"
     table = "cfem_arrecadacao_ativa"
     pk_name = "id"
 
-    # Gravação
     in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
-    
-    with engine.connect() as conn:
+
+    with engine.connect() as db_conn:
         to_sql_kwargs = dict(
-            name=table, 
-            con=conn, 
-            schema=schema, 
+            name=table,
+            con=db_conn,
+            schema=schema,
             if_exists="append",
             index_label=pk_name,
             chunksize=2000,
         )
 
-        try: 
-            with conn.begin():
+        try:
+            with db_conn.begin():
                 logging.info(f"Esvaziando a tabela <{schema}.{table}>...")
-                conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
-                
+                db_conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
+
                 logging.info("Carregando novos dados de CFEM...")
                 pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
 
-        except Exception as e:            
+        except Exception as e:
             logging.error(str(e))
-            exit(-1)    
+            raise  
