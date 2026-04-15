@@ -1,5 +1,5 @@
 {
-    "cfem_data": "https://app.anm.gov.br/DadosAbertos/ARRECADACAO/CFEM_Arrecadacao.csv",
+    "cfem_data": "https://dadosabertos.anm.gov.br/CFEM/CFEM_Arrecadacao.csv",
     "cfem_folder": "home/sysadmin/temp_folder/cfem",
     "column_names": ["ano", "mes", "processo", "anodoprocesso", "tipo_pf_pj", "cpf_cnpj", "substancia", "uf", "codigomunicipio", "municipio", "qt_comercializada", "unidadedemedida", "vl_recolhido", "datacriacao", "processo_ano"],
     "d_folder": "home/sysadmin/temp_folder",

@@ -32,6 +32,7 @@ from p3m.includes.python.criar_link import simbolic_link
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 def make_branch(ti):
     r = ti.xcom_pull(task_ids='p3m_etl_checksum')
@@ -201,12 +202,20 @@ atl_cards=SQLExecuteQueryOperator(
     trigger_rule='none_failed_min_one_success',
     **pg_kwargs)
 
+trigger_cfem = TriggerDagRunOperator(
+    task_id= 'trigger_cfem', 
+    trigger_dag_id = 'cfem_dag',
+    wait_for_completion = False,
+    dag = etl_dag
+
+)
+
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 
