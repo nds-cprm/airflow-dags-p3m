@@ -128,10 +128,16 @@ atualizar_mvw_minas=SQLExecuteQueryOperator(
     dag=cfem_dag,
     **pg_kwargs)
 
+atualizar_uranio=SQLExecuteQueryOperator(
+    task_id='cfem_atualizar_uranio',
+    sql="sql/atualizar_uranio.sql",
+    dag=cfem_dag,
+    **pg_kwargs)
+
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b] #type:ignore
 
-branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_mvw_minas # type: ignore
+branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_uranio>>atualizar_mvw_minas # type: ignore
 
 branch_b>>criar_link#type:ignore
