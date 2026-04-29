@@ -140,4 +140,4 @@ consumo_dados>>check_sum>>branching>>[branch_a,branch_b] #type:ignore
 
 branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_uranio>>atualizar_mvw_minas # type: ignore
 
-branch_b>>criar_link#type:ignore
+branch_b>>criar_link#type:ignores
