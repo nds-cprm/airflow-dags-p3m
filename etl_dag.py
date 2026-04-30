@@ -23,7 +23,7 @@ except ImportError:
 
 from airflow import DAG
 #caminho relativo dos módulos .py
-from p3m.includes.python.consumo import consumir_dado
+from p3m.includes.python.consumo import ingest_to_gdb as consumir_dado
 from p3m.includes.python.logs import log_inativos,log_duplicados,log_geom
 from p3m.includes.python.gravar_banco import gravar_banco
 from p3m.includes.python.descompactar import descompactar as _descompactar
@@ -32,9 +32,11 @@ from p3m.includes.python.criar_link import simbolic_link
 #Modulo para uso das variaveis registradas
 from airflow.models import Variable
 
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+
 def make_branch(ti):
-    r=ti.xcom_pull(task_ids='p3m_etl_checksum')
-    if r==1:
+    r = ti.xcom_pull(task_ids='p3m_etl_checksum')
+    if r:
        return 'p3m_branch_a'
     else:
         return 'p3m_branch_b'
@@ -44,19 +46,21 @@ def make_branch(ti):
 #Em caso de necessidade substituir as variáveis e o valores pelas criadas pelo usuário no UI
 
 bd_conn = Variable.get('p3m_conn') #Conexão com banco de dados da aplicação
-url_data = Variable.get('url_data') #contém o endereço do serviço de acesso ao arquivo gdb
+url_data = Variable.get('nds', deserialize_json = True) #contém o endereço do serviço de acesso ao arquivo gdb
 d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
+out_file = Variable.get('out_file')
 
 #Definição da DAG
-etl_dag = DAG (
-        'p3m_etl', 
-        default_args = {
-        "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
+etl_dag = DAG(
+    'p3m_etl', 
+    default_args = {
+        "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
         "email_on_failure": False
-        },
-        start_date = datetime(2023, 8, 9),
-        schedule_interval = "0 1 * * 2,4,6",
-        catchup = False )
+    },
+    start_date = datetime(2023, 8, 9),
+    schedule_interval = None, #"0 2 * * 2,4,6",
+    catchup = False
+)
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
 pg_kwargs = {
@@ -76,7 +80,7 @@ else:
 consumo_dados = PythonOperator(
     task_id = 'p3m_etl_consumo_dados',
     python_callable = consumir_dado,
-    op_args=[url_data,d_folder],
+    op_args=[url_data, d_folder, out_file],
     dag=etl_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
@@ -85,7 +89,7 @@ check_sum = PythonOperator(
     task_id='p3m_etl_checksum',
     python_callable=checkhash,
     provide_context=True,
-    op_kwargs={'dir':d_folder},
+    # op_kwargs={'dir':d_folder},
     dag=etl_dag
 )
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
@@ -106,18 +110,18 @@ criar_link = PythonOperator(
     dag=etl_dag
 )
 # Task que extrai os arquivos do zip na pasta temporaria
-descompactar = PythonOperator(
-    task_id='p3m_etl_descompactar',
-    python_callable=_descompactar,
-    op_args=[d_folder],
-    dag=etl_dag
-)
+# descompactar = PythonOperator(
+#     task_id='p3m_etl_descompactar',
+#     python_callable=_descompactar,
+#     op_args=[d_folder],
+#     dag=etl_dag
+# )
 
 # Task para salvar os dados no banco de dados
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
-    op_args=[bd_conn],
+    op_args=[d_folder, bd_conn],
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
@@ -198,11 +202,20 @@ atl_cards=SQLExecuteQueryOperator(
     trigger_rule='none_failed_min_one_success',
     **pg_kwargs)
 
+trigger_cfem = TriggerDagRunOperator(
+    task_id= 'trigger_cfem', 
+    trigger_dag_id = 'cfem_dag',
+    wait_for_completion = False,
+    dag = etl_dag
+
+)
+
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+# branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
+branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 

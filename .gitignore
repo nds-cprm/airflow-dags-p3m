@@ -25,6 +25,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+dags/
+logs/
+plugins/
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -161,3 +165,10 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+dockerfile
+
+docker-compose.yaml
+
+
+
