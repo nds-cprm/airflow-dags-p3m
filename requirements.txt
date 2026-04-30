@@ -1,4 +1,4 @@
-sqlalchemy
-pyhumps
-pyogrio
-geopandas
+sqlalchemy=1.4.54
+pyhumps=3.8.0
+pyogrio=0.12.1
+geopandas=1.1.1
