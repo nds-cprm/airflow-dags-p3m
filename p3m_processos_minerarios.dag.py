@@ -58,7 +58,8 @@ etl_dag = DAG(
         "email_on_failure": False
     },
     start_date = datetime(2023, 8, 9),
-    schedule_interval = None, #"0 2 * * 2,4,6",
+    schedule_interval = "0 2 * * 2,4,6",
+    tags=["p3m"],
     catchup = False
 )
 
@@ -204,7 +205,7 @@ atl_cards=SQLExecuteQueryOperator(
 
 trigger_cfem = TriggerDagRunOperator(
     task_id= 'trigger_cfem', 
-    trigger_dag_id = 'cfem_dag',
+    trigger_dag_id = 'p3m_cfem',
     wait_for_completion = False,
     dag = etl_dag
 
