@@ -52,7 +52,7 @@ out_file = Variable.get('out_file')
 
 #Definição da DAG
 etl_dag = DAG(
-    'p3m_etl', 
+    'p3m_processos_minerarios', 
     default_args = {
         "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
         "email_on_failure": False
