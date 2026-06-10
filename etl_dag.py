@@ -7,8 +7,9 @@ Data: Junho/2023
 Descrição: Projeto de engenharia de dados com foco em dados geográficos desenvolido com base em plataforma OpenSource Apache Airflow.
 Estrutura-se em uma ETL com consumo, tratamento dos dados e carregamento em de forma dinâmica no Banco de dados. 
 Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais como Gdal/Ogr.
-"""
 
+
+"""
 from datetime import datetime
 #Operadores padrão
 from airflow.operators.python import PythonOperator, BranchPythonOperator
@@ -194,6 +195,11 @@ atualizar_mvwpma=SQLExecuteQueryOperator(
     sql="sql/atualizar_mvwpma.sql",
     **pg_kwargs)
 
+atualizar_mviews_novas = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwpma',
+    sql="sql/atualizar_mvnovas.sql",
+    **pg_kwargs)
+
 
 #Task para atualização da Data nos cards do dashboard
 atl_cards=SQLExecuteQueryOperator(
@@ -215,7 +221,7 @@ trigger_cfem = TriggerDagRunOperator(
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards>>trigger_cfem # type: ignore
+branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma, atualizar_mviews_novas]>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 
