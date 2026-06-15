@@ -81,3 +81,23 @@ def convert_table(**kwargs):
     data.to_parquet(out_parquet)
 
     return out_parquet.as_posix()
+
+def convert_table_gu(**kwargs):
+
+    temp_folder = Path(kwargs['temp_folder'])
+
+    csv_file = Path(kwargs["ti"].xcom_pull(key='a_path'))
+
+    data = (
+        pd.read_csv(csv_file, encoding = 'latin-1').rename(
+            columns=lambda col: col.lower())
+        )
+    data['guia'] = data['guia'].fillna(0).astype(int)
+    data['datapublicacao'] = pd.to_datetime(data['datapublicacao'], format="%Y-%m-%d", errors='coerce')
+    
+    out_parquet = temp_folder.joinpath(f"{kwargs['nome']}.parquet")
+
+    data.to_parquet(out_parquet)
+
+    return out_parquet.as_posix()
+                                      

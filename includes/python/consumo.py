@@ -16,9 +16,9 @@ import sys
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
 
-
 # Função para donwload do arquivo base .gdb
 def consumir_dado(url, temp_dir, out_file, **kwargs):
+    task_logger.info('DAG iniciada')
     ti = kwargs['ti']
 
     #Request de download do arquivo .gdb

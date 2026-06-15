@@ -196,7 +196,7 @@ atualizar_mvwpma=SQLExecuteQueryOperator(
     **pg_kwargs)
 
 atualizar_mviews_novas = SQLExecuteQueryOperator(
-    task_id='p3m_etl_atualizar_mvwpma',
+    task_id='p3m_etl_atualizar_mvnovas',
     sql="sql/atualizar_mvnovas.sql",
     **pg_kwargs)
 

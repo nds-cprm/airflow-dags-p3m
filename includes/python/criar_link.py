@@ -9,7 +9,7 @@ def simbolic_link(**kwargs):
     # Task atual
     current_ti = kwargs["ti"]
     current_gdb_filename = current_ti.xcom_pull(key='a_path')    
-
+    task_logger.info('Arquivo atual: ' + current_gdb_filename)
     # Task anterior
     last_ti = current_ti.get_previous_ti()
     last_gdb_filename = last_ti.xcom_pull(key='a_path')
@@ -27,3 +27,7 @@ def simbolic_link(**kwargs):
 
     else:
         task_logger.warning("Os arquivos são iguais e as execuções foram no mesmo dia. Não há necessidade de criar link simbólico")
+
+
+
+

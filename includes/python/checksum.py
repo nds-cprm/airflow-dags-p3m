@@ -2,6 +2,7 @@ import hashlib
 import os
 import logging
 import subprocess
+from airflow.utils.state import DagRunState #type:ignore
 
 task_logger = logging.getLogger("airflow.task")
 
@@ -20,13 +21,22 @@ def checkhash(**kwargs):
         last_a_hash = last_ti.xcom_pull(key='a_hash')
         if last_a_hash:
             task_logger.info(f"Hash SHA256 da execução anterior: {current_a_hash}")
-        
+        try:
+            last_dag_run = last_ti.get_dagrun()
+            if last_dag_run.state != DagRunState.SUCCESS:
+                task_logger.warning("A execução anterior não foi bem-sucedida, não é possível comparar os hashes.")
+                update_gdb = True  
+                return update_gdb  
+        except Exception as e:
+            task_logger.error(f"Erro ao verificar o estado da execução anterior: {e}")
+
     # comparação dos hash e retorno para condicional para ser utilizado na task de branch
     update_gdb = current_a_hash != last_a_hash
 
+
     if update_gdb:
-        task_logger.info('Base atualizada, processo de ETL ocorrerá normalmente')
+        task_logger.info(f'Base atualizada, processo de ETL ocorrerá normalmente: {update_gdb}')
     else:
-        task_logger.info('Não houve atualização da base, processo de ETL será resumido')
+        task_logger.info(f'Não houve atualização da base, processo de ETL será resumido:  {update_gdb}')
     
     return update_gdb

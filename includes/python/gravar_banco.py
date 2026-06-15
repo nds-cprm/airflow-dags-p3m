@@ -30,7 +30,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
     active_schema = "anm" # Substituir o nome do schema onde serão processados e salvo os dados  
 
     out_gdb = kwargs["ti"].xcom_pull(key='a_path')  
-
+ 
     for layer in LAYERS:
         # TODO: Trocar por PyGDAL -> Conflita versões de python
         #----------------------------
@@ -89,7 +89,8 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         
     return 0
 
-def gravar_csv_banco(bd_conn, **kwargs):
+def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
+    task_logger.info(f'conexão com o banco: {bd_conn}')
     hook = PostgresHook(postgres_conn_id=bd_conn)    
 
     raw = hook.get_connection(bd_conn)
@@ -98,11 +99,11 @@ def gravar_csv_banco(bd_conn, **kwargs):
         f"@{raw.host}:{raw.port or 5432}/{raw.schema}"
     )
 
-    schema = "geoserver"
-    table = "cfem_arrecadacao_ativa"
-    pk_name = "id"
+    schema = sch
+    table = tb
+    pk_name = pk
 
-    in_parquet = kwargs["ti"].xcom_pull(task_ids='cfem_read_table', key='return_value')
+    in_parquet = kwargs["ti"].xcom_pull(task_ids=taskid, key='return_value')
 
     with engine.connect() as db_conn:
         to_sql_kwargs = dict(
@@ -117,7 +118,7 @@ def gravar_csv_banco(bd_conn, **kwargs):
         try:
             with db_conn.begin():
                 logging.info(f"Esvaziando a tabela <{schema}.{table}>...")
-                db_conn.execute(text(f"TRUNCATE TABLE {schema}.{table};"))
+                db_conn.execute(text(f'TRUNCATE TABLE "{schema}"."{table}";'))
 
                 logging.info("Carregando novos dados de CFEM...")
                 pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)

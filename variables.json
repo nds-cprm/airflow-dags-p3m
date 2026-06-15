@@ -24,5 +24,6 @@
             ]
         }
     },
-    "out_file": "DBANM.gdb"
+    "out_file": "DBANM.gdb",
+    "gu_data": "https://dadosabertos.anm.gov.br/SCM/Guia_de_Utilizacao_Autorizada.csv"
 }
