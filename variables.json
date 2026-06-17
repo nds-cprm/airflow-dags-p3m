@@ -25,5 +25,10 @@
         }
     },
     "out_file": "DBANM.gdb",
-    "gu_data": "https://dadosabertos.anm.gov.br/SCM/Guia_de_Utilizacao_Autorizada.csv"
+    "gu_data": "https://dadosabertos.anm.gov.br/SCM/Guia_de_Utilizacao_Autorizada.csv",
+    
+    "afloram_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/MapServer/0/query",
+    "afloram_nome": "cprm_aflor_geo",
+    "afloram_nums": {"":""}
+
 }

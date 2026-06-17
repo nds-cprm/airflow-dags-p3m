@@ -100,4 +100,3 @@ def convert_table_gu(**kwargs):
     data.to_parquet(out_parquet)
 
     return out_parquet.as_posix()
-                                      
