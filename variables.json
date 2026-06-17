@@ -29,6 +29,10 @@
     
     "afloram_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/MapServer/0/query",
     "afloram_nome": "cprm_aflor_geo",
-    "afloram_nums": {"":""}
+    "afloram_nums": {"":""},
+    "geocron_data":"https://geoportal.sgb.gov.br/server/rest/services/geologia/geocronologia/MapServer/0/query",
+    "geocron_nome": "cprm_geocron",
+    "geocron_nums": {"":""}
+
 
 }
