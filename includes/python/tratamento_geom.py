@@ -5,7 +5,7 @@ from datetime import datetime
 
 task_logger = logging.getLogger("airflow.task")
 
-def tratamento_geom(bd_conn, ti):
+def tratamento_geom(bd_conn, ti, pk_col = 'id'):
     layers = ti.xcom_pull(key='layers')
 
     hook = PostgresHook(postgres_conn_id=bd_conn)
@@ -34,7 +34,7 @@ def tratamento_geom(bd_conn, ti):
 
             teste = f"TABLESAMPLE bernoulli (1)"
 
-            log1 = f""" select id, ST_IsValidReason({geom_col}) as reason
+            log1 = f""" select {pk_col}, ST_IsValidReason({geom_col}) as reason
             from {l} {teste} where ST_IsValid({geom_col});"""
 
             rows_log1 = hook.get_pandas_df(log1)

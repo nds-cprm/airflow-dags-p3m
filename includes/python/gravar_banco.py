@@ -1,5 +1,6 @@
 
 import subprocess
+import sys
 import logging
 import pandas as pd
 import psycopg2
@@ -128,7 +129,7 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
             logging.error(str(e))
             raise  
 
-def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid'):
+def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid', ptm = False):
 
     conn = BaseHook.get_connection(bd_conn)
     dbname = conn.schema
@@ -153,7 +154,6 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid'):
     pg_conn.autocommit=True
     cursor = pg_conn.cursor()
 
-
     for l in lista:
         nome = l.split('/')[-1].split('.')[0]
         task_logger.info('Gravar SGB - geojson')
@@ -169,14 +169,18 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid'):
             check = False)
             task_logger.info('Tipo de geometria: ')
             tipo_geom = geom_type.stdout.split('(')[1].split(')')[0]
-            task_logger.info(tipo_geom)
+            task_logger.info(tipo_geom) 
 
-        except:
-            task_logger.info('Catch geom falhou')
+        except Exception as e:
+            task_logger.info(f'Catch geom falhou\n {e}\n {e.__class__}')
             tipo_geom = 'MULTIPOLYGON'
+        
+        if ptm == True:
+            task_logger.info('Gravar SGB - ptm on')
+            tipo_geom = 'PROMOTE_TO_MULTI'    
 
         truncate_sql = f"TRUNCATE TABLE {camada} CASCADE"
-        
+            
         try:
             cursor.execute(truncate_sql)
             task_logger.info(cursor.statusmessage)
@@ -197,7 +201,7 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid'):
                 '-nln',
                 f'{camada}',
                 '-t_srs', 'EPSG:4674',
-                "-nlt", f"{tipo_geom.upper()}",
+                "-nlt", f"{tipo_geom.upper()}", 
                 "-lco", f"FID={pk_col}", 
                 "-lco", "ENCODING=UTF-8",
                 "-lco", "launder=yes",
