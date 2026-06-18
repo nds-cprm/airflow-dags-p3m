@@ -190,6 +190,7 @@ def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str], step:int=1000) ->
         except Exception as e:
             task_logger.error('Download falhou')
             task_logger.error(str(e))
+            continue
             exit(-1)
             
         else:
