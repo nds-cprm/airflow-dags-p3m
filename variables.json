@@ -39,10 +39,10 @@
     "map_geo_data": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/XXX/query",
     "map_geo_nome": "cprm_map_geo",
     "map_geo_nums": {"5":"_25k","4":"_50k", "3":"_100k","2":"_250k", "1": "_1m"},
-    "petro_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/FeatureServer/0/query",
+    "petro_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/MapServer/0/query",
     "petro_nome":"cprm_petrogf", 
     "petro_nums": {"":""},
-    "ocor_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/FeatureServer/0/query",
+    "ocor_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/MapServer/0/query",
     "ocor_nome": "cprm_ocorr_min",
     "ocor_nums": {"":""}
 
