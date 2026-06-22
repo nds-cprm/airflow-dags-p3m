@@ -4,16 +4,19 @@ from airflow.operators.python import PythonOperator # type: ignore
 from airflow.operators.python import BranchPythonOperator  # type: ignore
 from airflow.operators.empty import EmptyOperator  # type: ignore
 #importando módulo do postgresoperator através do provider Postgres
-from airflow.providers.postgres.operators.postgres import PostgresOperator  # type: ignore
+#try:
+#    from airflow.providers.postgres.operators.postgres import PostgresOperator  # type: ignore
+#except ImportError:
+#    from airflow.providers.common.sql.operators.sql import SQLExecuteOperator as PostgresOperator
 from airflow import DAG  # type: ignore
 #caminho relativo dos módulos .py
-from includes.python.consumo import consumir_dado_sgb as consumir_dado 
-from includes.python.gravar_banco import gravar_banco_sgb as gravar_banco
-from includes.python.checksum import checkhash_sgb as checkhash
-from includes.python.criar_link import simbolic_link_sgb as simbolic_link
-from includes.python.tratamento_geom import tratamento_geom
-from includes.python.att_cache import att_geoserver
-from includes.python.column_change import change_column_name
+from p3m.includes.python.consumo import consumir_dado_sgb as consumir_dado 
+from p3m.includes.python.gravar_banco import gravar_banco_sgb as gravar_banco
+from p3m.includes.python.checksum import checkhash_sgb as checkhash
+from p3m.includes.python.criar_link import simbolic_link_sgb as simbolic_link
+from p3m.includes.python.tratamento_geom import tratamento_geom
+from p3m.includes.python.att_cache import att_geoserver
+from p3m.includes.python.column_change import change_column_name
 
 from airflow.models import Variable  # type: ignore
 
@@ -53,11 +56,12 @@ rename = {
 
 #Definição da DAG
 aflor_dag = DAG (
-        'afloram_etl', 
+        'afloramentos_geoportal', 
         default_args = {
-        "email":["abc@def.com"],#Alterar em produção
-        "email_on_failure": False
+        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
+        "email_on_failure": True
         },
+        tags = ['p3m', 'ESRI'],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
         schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,

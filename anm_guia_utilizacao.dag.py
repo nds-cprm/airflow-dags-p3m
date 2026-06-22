@@ -34,11 +34,12 @@ def make_branch(ti):
 
 #Definição da DAG
 gu_dag = DAG (
-        'gu_dag', 
+        'anm_guia_utilizacao', 
         default_args = {
-        "email":["asd@asd.br"],#Alterar em produção
-        "email_on_failure": False
+        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
+        "email_on_failure": True
         },
+        tags = ['p3m'],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
         schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,
