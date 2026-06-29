@@ -13,11 +13,12 @@ from p3m.includes.python.checksum import checkhash_sgb as checkhash
 from p3m.includes.python.criar_link import simbolic_link_sgb as simbolic_link
 from p3m.includes.python.tratamento_geom import tratamento_geom
 from p3m.includes.python.att_cache import att_geoserver
+from p3m.includes.python.column_change import change_column_name
 
 from airflow.models import Variable  # type: ignore
-
+ 
 def make_branch(ti):
-    r=ti.xcom_pull(task_ids='p3m_etl_checksum')
+    r=ti.xcom_pull(task_ids='Checksum_SGB')
     if r==1:
        return 'p3m_branch_a'
     else:
@@ -29,12 +30,26 @@ d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
 nome = Variable.get('geocron_nome')
 nums =  Variable.get('geocron_nums', deserialize_json=True)
 
+rename = {
+'ID': 'id',
+'AMOSTRA': 'amostra',
+'TOPONIMIA': 'toponomia',
+'ROCHA': 'rocha',
+'METODO_GEOPOSICIONAMENTO': 'mtd_geoposi',
+'ERRO_LOCACIONAL': 'erro_localc',
+'METODOS': 'mtds',
+'MATERIAIS_ANALISADOS': 'mat_analisados',
+'NIVEL_ACESSO': 'nivel_acesso',
+'GEOMETRY': 'geom'
+}
+
+
 #Definição da DAG
 geocron_dag = DAG (
         'geocronologia_geoportal', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+        "email":["abc@def.com"],#Alterar em produção
+        "email_on_failure": False
         },
         tags = ["p3m", "ESRI"],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
@@ -51,10 +66,18 @@ consumo_dados = PythonOperator(
                ,'nome': nome, 'num': nums},
     dag=geocron_dag)
 
+
+change_column = PythonOperator(
+    task_id = 'p3m_etl_mudar_coluna',
+    python_callable = change_column_name,
+    op_kwargs={'dicionario': rename, 'pkey': 'id', 'colunas': ['amostra', 'toponomia', 'rocha', 'mtd_geoposi', 'erro_localc', 'mtds', 'mat_analisados', 'nivel_ace']},
+    dag=geocron_dag)
+
+
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
 #{{prev_start_date_success | ds_nodash}} macro que retorna a data de inicialização da utlima utilização bem sucedida para identificação do diretorio e comparação das bases
 check_sum = PythonOperator(
-    task_id='p3m_etl_checksum',
+    task_id='Checksum_SGB',
     python_callable=checkhash,
     provide_context=True,
     op_kwargs={'dir':d_folder},
@@ -81,7 +104,7 @@ criar_link = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
     python_callable = gravar_banco,
-    op_args=[bd_conn],
+    op_args=[bd_conn], op_kwargs = {'pkey': 'id'},
     dag=geocron_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
@@ -98,7 +121,7 @@ att_cache= PythonOperator(
     dag=geocron_dag)
 
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
+consumo_dados>>change_column>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 branch_a>>gravar_dados>>fix_geom>>att_cache# type: ignore
 

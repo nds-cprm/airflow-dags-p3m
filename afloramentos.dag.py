@@ -35,8 +35,8 @@ nums =  Variable.get('afloram_nums', deserialize_json=True)
 
 rename = {
 'OBJECTID': 'id',
-'geometry': 'geom',
 'ID_AFLORAMENTO': 'id_aflor',
+'geometry': 'geom',
 'ORIGEM': 'origem',
 'METODO_GEOPOSICIONAMENTO': 'mtd_geoposi',
 'TOPONIMIA': 'toponimia',
@@ -58,8 +58,8 @@ rename = {
 aflor_dag = DAG (
         'afloramentos_geoportal', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+        "email":["abc@def.com"],#Alterar em produção
+        "email_on_failure": False
         },
         tags = ['p3m', 'ESRI'],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
@@ -82,7 +82,7 @@ consumo_dados = PythonOperator(
 change_column = PythonOperator(
     task_id = 'p3m_etl_mudar_coluna',
     python_callable = change_column_name,
-    op_kwargs={'dicionario': rename},
+    op_kwargs={'dicionario': rename, "pkey": "id"},
     dag=aflor_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo

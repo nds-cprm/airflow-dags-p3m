@@ -7,6 +7,7 @@ import psycopg2
 from sqlalchemy import text, create_engine
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.hooks.base import BaseHook #type:ignore
+import geopandas as gpd
 
 LAYERS = [
     "TB_Processo",
@@ -129,7 +130,7 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
             logging.error(str(e))
             raise  
 
-def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid', ptm = False):
+def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pkey = 'fid', ptm = False):
 
     conn = BaseHook.get_connection(bd_conn)
     dbname = conn.schema
@@ -155,12 +156,16 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid', ptm = False):
     cursor = pg_conn.cursor()
 
     for l in lista:
+        task_logger.info(l)
+        file = gpd.read_file(l)
+
         nome = l.split('/')[-1].split('.')[0]
         task_logger.info('Gravar SGB - geojson')
         task_logger.info(nome)
 
         camada = f'{active_schema}.{nome}'
         layers.append(camada)
+        task_logger.info(f"Pkey -> {pkey}")
     
         try:
             geom_type = subprocess.run(['ogrinfo', '-so', f'{l}'],
@@ -202,12 +207,8 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid', ptm = False):
                 f'{camada}',
                 '-t_srs', 'EPSG:4674',
                 "-nlt", f"{tipo_geom.upper()}", 
-                "-lco", f"FID={pk_col}", 
-                "-lco", "ENCODING=UTF-8",
-                "-lco", "launder=yes",
-                "-lco", "DIM=2",
                 "-append",
-                "-lco", f"GEOMETRY_NAME={geom_col}",
+
                 "-progress",
                 "--config", "PG_USE_COPY", "YES"
             ],
@@ -219,8 +220,9 @@ def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pk_col = 'fid', ptm = False):
         if result.returncode != 0:
             task_logger.info(result.stdout)
             task_logger.error(result.stderr)
-            exit(-1)
+            raise Exception 
         task_logger.info('-'*35)
+
 
     cursor.close()
     pg_conn.close()

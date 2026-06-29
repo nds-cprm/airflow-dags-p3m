@@ -33,8 +33,8 @@ nums =  Variable.get('ocor_nums', deserialize_json=True)
 etl_dag = DAG (
         'ocorrencias_minerais_geoportal', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+        "email":["abc@def.com"],#Alterar em produção
+        "email_on_failure": False
         },
         tags = ["p3m", "ESRI"],
         start_date = datetime(2023, 5, 17),#Ajustar em produção

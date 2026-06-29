@@ -33,8 +33,8 @@ nums =  Variable.get('map_geo_nums', deserialize_json=True)
 map_geo_dag = DAG (
         'mapeamento_geologico_geoportal', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+        "email":["abc@def.ghi"],#Alterar em produção
+        "email_on_failure": False
         },
         tags = ["p3m", "ESRI"],
         start_date = datetime(2023, 5, 17),#Ajustar em produção

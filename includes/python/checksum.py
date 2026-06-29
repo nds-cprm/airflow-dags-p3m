@@ -53,7 +53,19 @@ def checkhash_sgb(ti,**kwargs):
     #Em caso de primeira execução da DAG a função retorna valor correspondente a execução completa
     if not prev:
         task_logger.info('return 1 not prev')
-        return 1        
+        return 1   
+    current_ti = ti    
+    last_ti = current_ti.get_previous_ti()
+    if last_ti:
+        task_logger.info(f"last ti ---> {last_ti}")
+        try:
+            last_dag_run = last_ti.get_dagrun()
+            if last_dag_run.state != DagRunState.SUCCESS:
+                task_logger.warning("A execução anterior não foi bem-sucedida, não é possível comparar os hashes.")
+                update_gdb = True  
+                return update_gdb  
+        except Exception as e:
+            task_logger.error(f"Erro ao verificar o estado da execução anterior: {e}")
 
     p_path=os.path.join(temp,f'{prev.year}',f'{prev.month:02d}',f'{prev.day:02d}') # construção do caminho para a base previ
 
