@@ -30,12 +30,43 @@ d_folder = Variable.get('d_folder') #Pasta de backup das bases de dados
 nome = Variable.get('leg_nome')
 nums =  Variable.get('leg_nums', deserialize_json=True)
 
+rename = {
+    'OBJECTID': 'id',
+    'ID_UNIDADE_ESTRATIGRAFICA': 'id_uni_estratigrafica',
+    'SIGLA': 'sigla',
+    'HIERARQUIA': 'hierarquia',
+    'NOME': 'nome',
+    'AMBIENTE_TECTONICO': 'amb_tecto',
+    'SUB_AMBIENTE_TECTONICO': 'sub_amb_tectonico',
+    'SIGLA_PAI': 'sigla_pai',
+    'NOME_PAI': 'nome_pai',
+    'LEGENDA': 'legenda',
+    'ESCALA': 'escala',
+    'MAPA': 'mapa',
+    'LITOTIPOS': 'litotipos',
+    'RANGE': 'range',
+    'IDADE_MIN': 'idade_min',
+    'IDADE_MAX': 'idade_max',
+    'EON_MIN': 'eon_min',
+    'EON_MAX': 'eon_max',
+    'ERA_MIN': 'era_min',
+    'ERA_MAX': 'era_max',
+    'SISTEMA_MIN': 'sistema_min',
+    'SISTEMA_MAX': 'sistema_max',
+    'EPOCA_MIN': 'epoca_min',
+    'EPOCA_MAX': 'epoca_max',
+    'SIGLAS_HISTORICAS': 'siglas_historicas',
+    'GRUPO': 'grupo',
+    'geometry': 'geom'
+}
+
+
 #Definição da DAG
 leg_dag = DAG (
         'litoestratigrafia_geoportal', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+        "email":["abd@def.com"],#Alterar em produção
+        "email_on_failure": False
         },
         tags = ["p3m", "ESRI"],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
@@ -49,10 +80,16 @@ consumo_dados = PythonOperator(
     task_id = 'Consumir_Dado_Sgb',
     python_callable = consumir_dado,
     op_kwargs={'url': url_data, 'temp_dir': d_folder
-               ,'nome': nome, 'num': nums},
+               ,'nome': nome, 'num': nums, 'step': 10000},
     dag=leg_dag,
     retries=5,
     retry_delay = timedelta(minutes=5))
+
+change_column = PythonOperator(
+    task_id = 'p3m_etl_mudar_coluna',
+    python_callable = change_column_name,
+    op_kwargs={'dicionario': rename, "pkey": "id"},
+    dag=leg_dag)
 
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
 #{{prev_start_date_success | ds_nodash}} macro que retorna a data de inicialização da utlima utilização bem sucedida para identificação do diretorio e comparação das bases
@@ -101,7 +138,7 @@ att_cache= PythonOperator(
     dag=leg_dag)
 
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
+consumo_dados>>change_column>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 branch_a>>gravar_dados>>fix_geom>>att_cache# type: ignore
 

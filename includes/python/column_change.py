@@ -5,7 +5,7 @@ import subprocess
 
 task_logger = logging.getLogger("airflow.task")
 
-def change_column_name(ti, dicionario:dict, colunas: list = [], pkey: str = "id") -> int:
+def change_column_name(ti, dicionario:dict, colunas: list = [], pkey: str = "id", geometry_col: str = "geom") -> int:
 
     lista = ti.xcom_pull(key='lista')
     task_logger.info(f"Received list: {lista}")
@@ -36,21 +36,19 @@ def change_column_name(ti, dicionario:dict, colunas: list = [], pkey: str = "id"
         if colunas:
             df[colunas] = df[colunas].apply(lambda s: s.astype(str))
 
-        lista_colunas = ["geometry" if a in ["geom", "geometry"] else a for a in dicionario.values()]
-    
+        lista_colunas = [f"{geometry_col}" if a in ["geom", "geometry", "SHAPE"] else a for a in dicionario.values()]
+
+        df = gpd.GeoDataFrame(df, geometry=geometry_col)
+
+        task_logger.info(f"Renaming columns to: {lista_colunas}")
+
         df = df[lista_colunas]
 
         task_logger.info(f"Renamed columns in DataFrame: {df.columns.tolist()}")
 
-        subprocess.run(
-                ["rm", "-rf", item],
-                check=True)
-
-        task_logger.info(f"item {item} removed")
         df.to_file(item, index= False)
         task_logger.info(f"item {item} saved with new column names")
 
     return 0
-
 
 
