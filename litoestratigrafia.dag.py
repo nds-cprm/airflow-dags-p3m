@@ -80,7 +80,7 @@ consumo_dados = PythonOperator(
     task_id = 'Consumir_Dado_Sgb',
     python_callable = consumir_dado,
     op_kwargs={'url': url_data, 'temp_dir': d_folder
-               ,'nome': nome, 'num': nums, 'step': 10000},
+               ,'nome': nome, 'num': nums, 'step': 100},
     dag=leg_dag,
     retries=5,
     retry_delay = timedelta(minutes=5))

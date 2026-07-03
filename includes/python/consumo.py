@@ -180,7 +180,7 @@ def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str], step:int=1000) ->
             
             url2 = url.replace("XXX", str(i))
             task_logger.info(str(i))
-            response = requests.get(url2, params = params_stats)
+            response = requests.get(url2, params = params_stats, timeout = 30)
             response.raise_for_status()
             task_logger.info(response)
             task_logger.info(response.json())
@@ -191,7 +191,6 @@ def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str], step:int=1000) ->
             task_logger.error('Download falhou')
             task_logger.error(str(e))
             continue
-            exit(-1)
             
         else:
 
@@ -211,23 +210,63 @@ def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str], step:int=1000) ->
                         "f": "geojson",
                     }
 
-                    print(f"⏳ Querying range {start_id} – {end_id}...")
-                    r = requests.get(url2, params=params)
-                    r.raise_for_status()
+                    retries = 5
+                    backoff = 2
+                    features = []
 
-                    data = r.json()
-                    features = data.get("features", [])
-                    print(f"  → Retrieved {len(features)} features")
+                    while retries >= 0:
+                        try:
+                            print(f"⏳ Querying range {start_id} – {end_id}...")
+                            r = requests.get(url2, params=params, timeout = 45)
+                            r.raise_for_status()
 
+                            data = r.json()
+                            features = data.get("features", [])
+                            print(f"  → Retrieved {len(features)} features")
+                            break
+                        except (requests.exceptions.RequestException, ValueError) as req_err:                          
+                            
+                            task_logger.warning(f"Error fetching range {start_id}-{end_id}: {req_err}. \n Retries left: {retries}")
+                            if retries == 0:
+                                task_logger.info(f"retries esgotadas, buscando individualmente")
+                                for individual_id in range(start_id, end_id + 1):
+                                    task_logger.info(f"buscando individualmente OBJECTID = {individual_id}")
+                                    single_params = params.copy()
+                                    single_params["where"] = f"OBJECTID = {individual_id}"
+                                    
+                                    try:
+                                        r_single = requests.get(url2, params=single_params, timeout=15)
+                                        r_single.raise_for_status()
+                                        
+                                        single_data = r_single.json()
+                                        single_features = single_data.get("features", [])
+                                        
+                                        if single_features:
+                                            all_features.extend(single_features)
+                                            count += len(single_features)
+                                            task_logger.info(f"feature individual OBJECTID = {individual_id} retrieved successfully")
+                                    except Exception as feature_error:
+                                        
+                                        task_logger.error(
+                                            f"feature quebrada: OBJECTID = {individual_id} "
+                                            f"skipando feature. erro -> {feature_error}"
+                                        )
+                                        time.sleep(1) 
+                                        continue
+                            time.sleep(backoff)
+                            backoff *= 2
+                        finally: 
+                            retries -= 1
                     all_features.extend(features)
+                    count += len(features)
                     time.sleep(0.5)
 
                     
-                    final_geojson = {
-                        "type": "FeatureCollection",
-                        "features": all_features
-                    }
-                    count+=len(features)
+                final_geojson = {
+                    "type": "FeatureCollection",
+                    "features": all_features
+                }
+                    
                 task_logger.info(f"{count} features retrieved in total")
                 task_logger.info(f'Arquivo {nome}{str(a)} baixado')
                 task_logger.info('Redirecionando o arquivo para diretorio correspondente')
