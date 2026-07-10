@@ -1,0 +1,259 @@
+[
+    {
+        "name": "litoestratigrafia_25000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_25000/MapServer/0/query",
+        "step": 10000,
+        "retries": 3,
+        "col_renames": {
+            "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
+            "AMBIENTE_TECTONICO": "amb_tecto",
+            "SUB_AMBIENTE_TECTONICO": "sub_amb_tectonico"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_litostrat_25000"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "litoestratigrafia_50000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_50000/MapServer/0/query",
+        "step": 10000,
+        "retries": 3,
+        "col_renames": {
+            "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
+            "AMBIENTE_TECTONICO": "amb_tecto",
+            "SUB_AMBIENTE_TECTONICO": "sub_amb_tectonico"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_litostrat_50000"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "litoestratigrafia_100000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_100000/MapServer/0/query",
+        "step": 10000,
+        "retries": 3,
+        "col_renames": {
+            "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
+            "AMBIENTE_TECTONICO": "amb_tecto",
+            "SUB_AMBIENTE_TECTONICO": "sub_amb_tectonico"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_litostrat_100000"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "litoestratigrafia_250000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_250000/MapServer/0/query",
+        "step": 10000,
+        "retries": 3,
+        "col_renames": {
+            "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
+            "AMBIENTE_TECTONICO": "amb_tecto",
+            "SUB_AMBIENTE_TECTONICO": "sub_amb_tectonico"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_litostrat_250000"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "litoestratigrafia_1000000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_1000000/MapServer/0/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {
+            "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
+            "AMBIENTE_TECTONICO": "amb_tecto",
+            "SUB_AMBIENTE_TECTONICO": "sub_amb_tectonico"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_litostrat_1000000"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "afloramentos",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/MapServer/0/query",
+        "step": 300000,
+        "retries": 3,
+        "col_renames": {
+            "ID_AFLORAMENTO": "id_aflor",
+            "METODO_GEOPOSICIONAMENTO": "mtd_geoposi",
+            "MUNICIPIO": "mun",
+            "DATA_CADASTRO": "data_cad",
+            "TIPO_AFLORAMENTO": "tp_aflor",
+            "NUMERO_CAMPO": "n_campo",
+            "CODIGO_FOLHA": "cod_folha"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_aflor_geo"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "geocronologia",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/geocronologia/MapServer/0/query",
+        "step": 300000,
+        "retries": 3,
+        "col_renames": {
+            "METODO_GEOPOSICIONAMENTO": "mtd_geoposi",
+            "ERRO_LOCACIONAL": "erro_localc",
+            "METODOS": "mtds",
+            "MATERIAIS_ANALISADOS": "mat_analisados"
+        },
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_geocron"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "ocorrencias_minerais",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/MapServer/0/query",
+        "step": 100000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_ocorr_min"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "petrografia",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/MapServer/0/query",
+        "step": 100000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_petrogf"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "mapeamento_geologico_25000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/5/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_25k"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "mapeamento_geologico_50000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/4/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_50k"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "mapeamento_geologico_100000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/3/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_100k"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "mapeamento_geologico_250000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/2/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_250k"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    },
+    {
+        "name": "mapeamento_geologico_1000000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/1/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_1m"
+        },
+        "geoserver": {
+            "layer": "",
+            "store": "",
+            "workspace": ""
+        }
+    }
+]

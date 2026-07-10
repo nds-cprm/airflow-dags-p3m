@@ -14,6 +14,10 @@ import shapely
 import time
 import json
 
+from airflow.exceptions import AirflowException
+
+from p3m.includes.python.utils import get_bronze_folder
+
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
 
@@ -150,160 +154,118 @@ def ingest_to_gdb(sources: dict, temp_dir: str, out_file: str, **kwargs) -> str:
     ti.xcom_push(key="a_hash", value=out_gdb_hash)
     ti.xcom_push(key='a_path',value=out_gdb)
 
-def consumir_dado_sgb(url, temp_dir, ti, nome, num: dict[str], step:int=1000) -> str:
-    lista = []
-    hashes = []
-    task_logger.info('-'*35)
-    task_logger.info(num)
-    task_logger.info('-'*35)
-    
-    for i,a in num.items():
-        task_logger.info(f'Camada {nome} {i}')
-        task_logger.info(f'{nome}{a}')
 
-        try:
-            params_stats = {
-        "where": "1=1",
-        "outStatistics": json.dumps([
-            {
-                "statisticType": "min",
-                "onStatisticField": "OBJECTID",
-                "outStatisticFieldName": "min_objectid"
-            },
-            {
-                "statisticType": "max",
-                "onStatisticField": "OBJECTID",
-                "outStatisticFieldName": "max_objectid"
-            }
-        ]),
-        "f": "json"}
-            
-            url2 = url.replace("XXX", str(i))
-            task_logger.info(str(i))
-            response = requests.get(url2, params = params_stats, timeout = 30)
-            response.raise_for_status()
-            task_logger.info(response)
-            task_logger.info(response.json())
-            stats = response.json()['features'][0]["attributes"]
-            min_id, max_id = stats['MIN_OBJECTID'], stats['MAX_OBJECTID']
+def consumir_dado_geoportal(
+        url, 
+        nome, 
+        step: int=1000, 
+        **kwargs
+    ) -> str:
 
-        except Exception as e:
-            task_logger.error('Download falhou')
-            task_logger.error(str(e))
-            continue
-            
-        else:
+    ti = kwargs["ti"]    
+    lista = []  # lista de arquivos
 
-            if response.status_code < 300:
-                all_features = []
-                
-                count=0
-                for start_id in range(int(min_id), int(max_id) + 1, step):
-                    end_id = start_id + step - 1
-                    where_clause = f"OBJECTID >= {start_id} AND OBJECTID <= {end_id}"
-
-                    params = {
-                        "where": where_clause,
-                        "outFields": "*",
-                        "returnGeometry": "true",
-                        "outSR": "4674",
-                        "f": "geojson",
-                    }
-
-                    retries = 5
-                    backoff = 2
-                    features = []
-
-                    while retries >= 0:
-                        try:
-                            print(f"⏳ Querying range {start_id} – {end_id}...")
-                            r = requests.get(url2, params=params, timeout = 45)
-                            r.raise_for_status()
-
-                            data = r.json()
-                            features = data.get("features", [])
-                            print(f"  → Retrieved {len(features)} features")
-                            break
-                        except (requests.exceptions.RequestException, ValueError) as req_err:                          
-                            
-                            task_logger.warning(f"Error fetching range {start_id}-{end_id}: {req_err}. \n Retries left: {retries}")
-                            if retries == 0:
-                                task_logger.info(f"retries esgotadas, buscando individualmente")
-                                for individual_id in range(start_id, end_id + 1):
-                                    task_logger.info(f"buscando individualmente OBJECTID = {individual_id}")
-                                    single_params = params.copy()
-                                    single_params["where"] = f"OBJECTID = {individual_id}"
-                                    
-                                    try:
-                                        r_single = requests.get(url2, params=single_params, timeout=15)
-                                        r_single.raise_for_status()
-                                        
-                                        single_data = r_single.json()
-                                        single_features = single_data.get("features", [])
-                                        
-                                        if single_features:
-                                            all_features.extend(single_features)
-                                            count += len(single_features)
-                                            task_logger.info(f"feature individual OBJECTID = {individual_id} retrieved successfully")
-                                    except Exception as feature_error:
-                                        
-                                        task_logger.error(
-                                            f"feature quebrada: OBJECTID = {individual_id} "
-                                            f"skipando feature. erro -> {feature_error}"
-                                        )
-                                        time.sleep(1) 
-                                        continue
-                            time.sleep(backoff)
-                            backoff *= 2
-                        finally: 
-                            retries -= 1
-                    all_features.extend(features)
-                    count += len(features)
-                    time.sleep(0.5)
-
-                    
-                final_geojson = {
-                    "type": "FeatureCollection",
-                    "features": all_features
+    try:
+        # Primeiro obtém as estatísticas do serviço (Min OBJECTID, Max OBJECTID)
+        params_stats = {
+            "where": "1=1",
+            "outStatistics": json.dumps([
+                {
+                    "statisticType": "min",
+                    "onStatisticField": "OBJECTID",
+                    "outStatisticFieldName": "min_objectid"
+                },
+                {
+                    "statisticType": "max",
+                    "onStatisticField": "OBJECTID",
+                    "outStatisticFieldName": "max_objectid"
                 }
-                    
-                task_logger.info(f"{count} features retrieved in total")
-                task_logger.info(f'Arquivo {nome}{str(a)} baixado')
-                task_logger.info('Redirecionando o arquivo para diretorio correspondente')
-                yfolder = path.join (temp_dir,date.today().strftime("%Y"))
-                makedirs(yfolder,exist_ok=True)
-                mfolder = path.join(yfolder,date.today().strftime("%m"))
-                makedirs(mfolder,exist_ok=True)
-                dfolder = path.join(mfolder,date.today().strftime("%d"))
-                makedirs(dfolder,exist_ok=True)
-                
-                with open(f'{dfolder}/{nome}{a}.geojson', 'w', encoding='utf-8') as f:
-                    json.dump(final_geojson, f, ensure_ascii=False, indent=2)
+            ]),
+            "f": "json"
+        }
+        
+        response = requests.get(url, params=params_stats)
+        response.raise_for_status()
 
-                a_file=f'{dfolder}/{nome}{a}.geojson'
-                task_logger.info('Arquivo gravado em '+dfolder)
+        task_logger.info("Retrieving from %s with step of %s" % (url, step))
+        task_logger.info("Response status [%s]" % response.status_code)
+
+        geoportal_data = response.json()
+        
+        if "error" in geoportal_data:
+            raise AirflowException("Erro na recuperação dos dados do geoportal: %s" % str(geoportal_data['error']))
+
+        stats = geoportal_data['features'][0]["attributes"]
+        min_id, max_id = int(stats['MIN_OBJECTID']), int(stats['MAX_OBJECTID'])
+
+        task_logger.info(f"Min OBJECTID: {min_id}")
+        task_logger.info(f"Max OBJECTID: {max_id}")
+
+    except Exception as e:
+        raise AirflowException('Download falhou [%s]: %s' % (e.__class__, e))
+        
+    else:
+        page_num=1
+
+        for start_id in range(min_id, max_id+1, step):
+            end_id = start_id + step - 1
+
+            if end_id > max_id:
+                end_id = max_id
+
+            task_logger.info(f"⏳ Querying page {page_num}: range {start_id} – {end_id}...")
+
+            # Request data
+            params = {
+                "where": f"OBJECTID >= {start_id} AND OBJECTID <= {end_id}",
+                "outFields": "*",
+                "returnGeometry": "true",
+                "outSR": "4674",
+                "f": "geojson",
+            }
+
+            r = requests.get(url, params=params)
+            geoportal_data = r.json()
+
+            if r.status_code < 300:
+                data = r.json()
+                if "error" in data:
+                    raise AirflowException("Erro na recuperação dos dados do geoportal: %s" % str(geoportal_data['error']))
                 
-                task_logger.info(os.getcwd())
+                feature_count = len(data.get("features", []))
+                task_logger.info(f"{feature_count} features retrieved in total")
+                
+                task_logger.info("Sleeping 5-second")
+                time.sleep(5)
+                
+                # Diretório de saída
+                dfolder = get_bronze_folder(nome)
+                a_file = path.join(dfolder, f"{nome}_page{page_num}.geojson")
+                
+                with open(a_file, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+
+                task_logger.info(f'Dataset written in {a_file}')
 
                 #Lendo e gerando o hash sha256 para base atual
                 with open(a_file,"rb") as f: 
                     bytes = f.read() # read entire file as bytes
                     a_hash = hashlib.sha256(bytes).hexdigest()
-                hashes.append(a_hash)
+
                 #Escrevendo o hash em um arquivo na pasta
-                output=a_file +'.sha256'
-                with open(output,"w") as f:
+                with open(a_file +'.sha256',"w") as f:
                     f.write(a_hash)
-                                             
-                lista.append(f'{dfolder}/{nome}{a}.geojson')
+                    task_logger.info(f'checksum: {a_hash}')
+                                                
+                lista.append(a_file)
+                
+                # Increase page
+                page_num += 1
+
             else:
-                task_logger.error(f'Arquivo {nome}{str(a)} não-baixado')
-                task_logger.error(f'Status: {response.status_code}')
-                exit(-1)
-     #Xcoms enviando os endereços dos arquivos para uso em outras tasks 
-    ti.xcom_push(key="hashes", value=hashes)
+                raise AirflowException(f'Arquivo {nome} não-baixado: Status: {response.status_code}')
+    
+    # Xcoms enviando os endereços dos arquivos para uso em outras tasks
     ti.xcom_push(key='lista',value=lista)
-    ti.xcom_push(key='a_path', value = dfolder)
-    task_logger.info(hashes)
-    task_logger.info(lista)
-    return lista
+    ti.xcom_push(key='a_path', value=dfolder)
+    ti.xcom_push(key='dataset_name', value=nome)

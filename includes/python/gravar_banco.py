@@ -1,13 +1,16 @@
 
 import subprocess
-import sys
+# import sys
+import re
 import logging
 import pandas as pd
 import psycopg2
 from sqlalchemy import text, create_engine
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.hooks.base import BaseHook #type:ignore
-import geopandas as gpd
+from airflow.models import Variable
+from airflow.exceptions import AirflowException
+# import geopandas as gpd
 
 LAYERS = [
     "TB_Processo",
@@ -130,102 +133,88 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
             logging.error(str(e))
             raise  
 
-def gravar_banco_sgb(bd_conn, ti, geom_col='geom', pkey = 'fid', ptm = False):
+def gravar_banco_sgb(
+        schema,
+        table,
+        geom_col='geom', 
+        pkey='fid', 
+        ptm=False,
+        **kwargs,
+    ):
 
-    conn = BaseHook.get_connection(bd_conn)
-    dbname = conn.schema
-    host = conn.host
-    password = conn.password
-    user = conn.login
-    port = conn.port
-    active_schema = 'cprm'
-    task_logger.info('host e user')
-    task_logger.info(conn.get_uri())
-    lista = ti.xcom_pull(key='lista')
-    layers = []
+    ti = kwargs["ti"]
+    
+    dataset = ti.xcom_pull(key='silver_dataset')
+
+    conn = BaseHook.get_connection(
+        Variable.get("P3M_LAYERS_DB", "p3m_layers")
+    )
 
     pg_conn = psycopg2.connect(
-    dbname = dbname,
-    host=host,
-    port=port,
-    user=user,
-    password=password
-
+        dbname = conn.schema,
+        host=conn.host,
+        port=conn.port,
+        user=conn.login,
+        password=conn.password
     )
+
     pg_conn.autocommit=True
     cursor = pg_conn.cursor()
 
-    for l in lista:
-        task_logger.info(l)
-        file = gpd.read_file(l)
-
-        nome = l.split('/')[-1].split('.')[0]
-        task_logger.info('Gravar SGB - geojson')
-        task_logger.info(nome)
-
-        camada = f'{active_schema}.{nome}'
-        layers.append(camada)
-        task_logger.info(f"Pkey -> {pkey}")
+    camada = f'{schema}.{table}'
     
-        try:
-            geom_type = subprocess.run(['ogrinfo', '-so', f'{l}'],
+    try:
+        geom_type = subprocess.run(['ogrinfo', '-so', dataset],
             capture_output = True,
             text= True,
-            check = False)
-            task_logger.info('Tipo de geometria: ')
-            tipo_geom = geom_type.stdout.split('(')[1].split(')')[0]
-            task_logger.info(tipo_geom) 
+            check = False
+        )
 
-        except Exception as e:
-            task_logger.info(f'Catch geom falhou\n {e}\n {e.__class__}')
-            tipo_geom = 'MULTIPOLYGON'
+        tipo_geom = re.sub('\s+', "", geom_type.stdout.split('(')[1].split(')')[0])
+        task_logger.info('Tipo de geometria: %s' % tipo_geom)
+
+    except Exception as e:
+        task_logger.info(f'Catch geom falhou\n {e}\n {e.__class__}')
+        # tipo_geom = 'MULTIPOLYGON'
+    
+    if ptm == True:
+        task_logger.info('Gravar SGB - ptm on')
+        tipo_geom = 'PROMOTE_TO_MULTI'    
+
+    truncate_sql = f"TRUNCATE TABLE {camada} CASCADE;"
         
-        if ptm == True:
-            task_logger.info('Gravar SGB - ptm on')
-            tipo_geom = 'PROMOTE_TO_MULTI'    
+    try:
+        cursor.execute(truncate_sql)
+        task_logger.info(f'Truncate table {camada}')
 
-        truncate_sql = f"TRUNCATE TABLE {camada} CASCADE"
-            
-        try:
-            cursor.execute(truncate_sql)
-            task_logger.info(cursor.statusmessage)
-            task_logger.info(f'Truncate table {camada}')
-        except Exception as e:
-            task_logger.info('Erro:')
-            task_logger.info(cursor.statusmessage)
-            task_logger.info(e)
-            task_logger.info(e.__class__)
+    except Exception as e:
+        raise AirflowException('Erro [%s][%s]: %s' % (e.__class__, cursor.statusmessage, e))
 
-        result = subprocess.run(
-            [
-                "ogr2ogr",
-                "-f",
-                "PostgreSQL",
-                f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
-                f'{l}',
-                '-nln',
-                f'{camada}',
-                '-t_srs', 'EPSG:4674',
-                "-nlt", f"{tipo_geom.upper()}", 
-                "-append",
+    ogr_run = [
+        "ogr2ogr",
+        "-f",
+        "PostgreSQL",
+        f"PG:host={conn.host} port={conn.port} dbname={conn.schema} active_schema={schema} user={conn.login} password={conn.password}",
+        dataset,
+        '-nln',
+        f'{camada}',
+        '-t_srs', 'EPSG:4674',
+        "-nlt", f"{tipo_geom.upper()}", 
+        "-append",
+        "-progress",
+        "-preserve_fid",
+        "--config", "PG_USE_COPY", "YES"
+    ]
 
-                "-progress",
-                "--config", "PG_USE_COPY", "YES"
-            ],
-            capture_output=True,
-            text=True
-            )
-        print(result.stderr, result.stdout)
+    task_logger.info("Executing OGR process: %s" % " ".join(ogr_run))
 
-        if result.returncode != 0:
-            task_logger.info(result.stdout)
-            task_logger.error(result.stderr)
-            raise Exception 
-        task_logger.info('-'*35)
+    result = subprocess.run(ogr_run, capture_output=True, text=True)
 
+    if result.returncode != 0:
+        task_logger.info(result.stdout)
+        raise AirflowException(result.stderr)
+    
+    task_logger.info('-'*35)
 
     cursor.close()
     pg_conn.close()
-    ti.xcom_push(key='layers', value = layers)
-
-    return 0
