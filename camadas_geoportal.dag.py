@@ -15,7 +15,7 @@ from p3m.includes.python.gravar_banco import gravar_banco_sgb as gravar_banco
 # from p3m.includes.python.checksum import checkhash_sgb as checkhash
 # from p3m.includes.python.criar_link import simbolic_link_sgb as simbolic_link
 # from p3m.includes.python.tratamento_geom import tratamento_geom
-from p3m.includes.python.att_cache import att_geoserver
+from p3m.includes.python.geowebcache import reseed
 from p3m.includes.python.sanitizar import sanitize_dataset
 
 
@@ -104,8 +104,8 @@ def dag_factory(dag_params:dict) -> DAG:
 
         att_cache= PythonOperator(
             task_id='%s_reseed_cache' % _name,
-            python_callable=att_geoserver,
-            op_kwargs={'store': 'p3m'},
+            python_callable=reseed,
+            op_kwargs=dag_params.pop("geoserver"),
         )
 
         consumo_dados >> sanitizar >> gravar_dados >> att_cache

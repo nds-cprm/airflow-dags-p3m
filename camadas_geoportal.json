@@ -14,9 +14,8 @@
             "table": "cprm_lev_litostrat_25000"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_lev_litostrat_25000"
         }
     },
     {
@@ -34,9 +33,8 @@
             "table": "cprm_lev_litostrat_50000"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_lev_litostrat_50000"
         }
     },
     {
@@ -54,9 +52,8 @@
             "table": "cprm_lev_litostrat_100000"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_lev_litostrat_100000"
         }
     },
     {
@@ -74,9 +71,8 @@
             "table": "cprm_lev_litostrat_250000"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_lev_litostrat_250000"
         }
     },
     {
@@ -94,9 +90,8 @@
             "table": "cprm_lev_litostrat_1000000"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_lev_litostrat_1000000"
         }
     },
     {
@@ -118,9 +113,8 @@
             "table": "cprm_aflor_geo"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_aflor_geo"
         }
     },
     {
@@ -139,9 +133,8 @@
             "table": "cprm_geocron"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_geocron"
         }
     },
     {
@@ -155,9 +148,8 @@
             "table": "cprm_ocorr_min"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_ocorr_min"
         }
     },
     {
@@ -171,9 +163,8 @@
             "table": "cprm_petrogf"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_petrogf"
         }
     },
     {
@@ -187,9 +178,8 @@
             "table": "cprm_map_geo_25k"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_25k"
         }
     },
     {
@@ -203,9 +193,8 @@
             "table": "cprm_map_geo_50k"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_50k"
         }
     },
     {
@@ -219,9 +208,8 @@
             "table": "cprm_map_geo_100k"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_100k"
         }
     },
     {
@@ -235,9 +223,8 @@
             "table": "cprm_map_geo_250k"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_250k"
         }
     },
     {
@@ -251,9 +238,8 @@
             "table": "cprm_map_geo_1m"
         },
         "geoserver": {
-            "layer": "",
-            "store": "",
-            "workspace": ""
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_1m"
         }
     }
 ]
