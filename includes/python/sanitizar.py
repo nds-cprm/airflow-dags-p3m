@@ -2,6 +2,8 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 import logging
+
+from pandas.api.types import is_integer_dtype
 from airflow.exceptions import AirflowException
 
 from os import path
@@ -71,10 +73,20 @@ def sanitize_dataset(
             in_date_col: lambda gdf: fix_and_parse_datetime(gdf, in_date_col) 
         })
 
+    # Print gdf info
+    if not is_integer_dtype(df.index.dtype):
+        logging.warning("The Dataframe index is not a integer dtype: Found %s. Trying to cast to integer" % df.index.dtype)
+
+        try:
+            df.index = df.index.astype(int)
+        except Exception as e:
+            raise AirflowException("Can't force index to integer: [%s] %s" % (e.__class__, e))
+
+    df.info()
+
     # Salva em GeoPackage
     nome = ti.xcom_pull(key='dataset_name')
     dfolder = get_silver_folder(nome)
-    df.info()
 
     a_file = path.join(dfolder, f"{nome}.gpkg")    
     df.to_file(a_file, layer=nome, driver="GPKG", index=True)
