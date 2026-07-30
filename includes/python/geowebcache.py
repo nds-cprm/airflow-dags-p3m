@@ -91,9 +91,10 @@ def reseed(workspace, layer, **kwargs):
         # "srs":{
         #     "number": 3857
         # },
-        "gridSetId": "EPSG:3857",
+        # -------------> EPSG:900913 ?
+        "gridSetId": "EPSG:900913",
         "zoomStart": 0,
-        "zoomStop": 11,
+        "zoomStop": 9,
         "format": "image/png",
         "type": "reseed",
         "threadCount": 1,

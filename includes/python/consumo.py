@@ -204,8 +204,10 @@ def consumir_dado_geoportal(
     except Exception as e:
         raise AirflowException('Download falhou [%s]: %s' % (e.__class__, e))
         
+
     else:
         page_num=1
+
 
         for start_id in range(min_id, max_id+1, step):
             end_id = start_id + step - 1
@@ -225,8 +227,9 @@ def consumir_dado_geoportal(
             }
 
             r = requests.get(url, params=params)
+            r.raise_for_status()
             geoportal_data = r.json()
-
+            
             if r.status_code < 300:
                 data = r.json()
                 if "error" in data:

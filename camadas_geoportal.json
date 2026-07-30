@@ -40,7 +40,7 @@
     {
         "name": "litoestratigrafia_100000",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_100000/MapServer/0/query",
-        "step": 10000,
+        "step": 1000,
         "retries": 3,
         "col_renames": {
             "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
@@ -59,7 +59,7 @@
     {
         "name": "litoestratigrafia_250000",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_250000/MapServer/0/query",
-        "step": 10000,
+        "step": 500,
         "retries": 3,
         "col_renames": {
             "ID_UNIDADE_ESTRATIGRAFICA": "id_uni_estratigrafica",
@@ -240,6 +240,66 @@
         "geoserver": {
             "workspace": "p3m",
             "layer": "vw_cprm_map_geo_1m"
+        }
+    },
+    {
+        "name": "cartas_anomalia",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geofisica/cartas_anomalia/MapServer/0/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_cartas_anomalia"
+        },
+        "geoserver": {
+            "workspace": "p3m",
+            "layer": "vw_cprm_cartas_anomalia"
+        }
+    },
+    {
+        "name": "furos_sondagem",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/furos_sondagem/MapServer/0/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_furos_sondagem"
+        },
+        "geoserver": {
+            "workspace": "p3m",
+            "layer": "vw_cprm_furos_sondagem"
+        }
+    },
+    {
+        "name": "mapeamento_geologico_2500000",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_2500000/MapServer/0/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_map_geo_2500k"
+        },
+        "geoserver": {
+            "workspace": "p3m",
+            "layer": "vw_cprm_map_geo_2500k"
+        }
+    },
+    {
+        "name": "modelamento_3d",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/projetos/projetos_3d/MapServer/1/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_modelamento_3d"
+        },
+        "geoserver": {
+            "workspace": "p3m",
+            "layer": "vw_cprm_modelamento_3d"
         }
     }
 ]

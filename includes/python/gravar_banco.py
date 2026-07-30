@@ -188,7 +188,8 @@ def gravar_banco_sgb(
         task_logger.info(f'Truncate table {camada}')
 
     except Exception as e:
-        raise AirflowException('Erro [%s][%s]: %s' % (e.__class__, cursor.statusmessage, e))
+        task_logger.info(f'Erro ao truncar {camada} -> {e.__class__}  |  {cursor.statusmessage}')
+        #raise AirflowException('Erro [%s][%s]: %s' % (e.__class__, cursor.statusmessage, e))
 
     ogr_run = [
         "ogr2ogr",
