@@ -39,7 +39,7 @@ list_header = Variable.get('column_names')#Lista com nome das colunas para nova 
 
 #Definição da DAG
 cfem_dag = DAG (
-        'cfem_dag', 
+        'p3m_cfem', 
         default_args = {
         "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
         "email_on_failure": False
@@ -47,7 +47,8 @@ cfem_dag = DAG (
         start_date = datetime(2023, 5, 17),#Ajustar em produção
         schedule_interval = None, # '0 23 * * *',#Ajustar em produção
         catchup = False,
-    #     template_searchpath = Variable.get('template_searchpath')
+        # template_searchpath = Variable.get('template_searchpath'),
+        tags=["p3m"]
     )
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
