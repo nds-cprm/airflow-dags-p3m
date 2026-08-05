@@ -275,7 +275,7 @@
     {
         "name": "mapeamento_geologico_2500000",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_2500000/MapServer/0/query",
-        "step": 1000,
+        "step": 250,
         "retries": 3,
         "col_renames": {},
         "out_db": {
