@@ -59,7 +59,8 @@ def dag_factory(dag_params:dict) -> DAG:
             task_id = '%s_sanitize' % _name,
             python_callable=sanitize_dataset,
             op_kwargs={
-                'cols_to_rename': dag_params["col_renames"]
+                'cols_to_rename': dag_params["col_renames"],
+                'date_field': dag_params.get("date_field")
             },
         )
 

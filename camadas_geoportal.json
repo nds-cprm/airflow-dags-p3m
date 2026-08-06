@@ -143,6 +143,7 @@
         "step": 100000,
         "retries": 3,
         "col_renames": {},
+        "date_field": "data_cadastro",
         "out_db": {
             "schema": "cprm",
             "table": "cprm_ocorr_min"
