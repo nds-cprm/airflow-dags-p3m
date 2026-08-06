@@ -41,7 +41,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         # TODO: Trocar por PyGDAL -> Conflita versões de python
         #----------------------------
         # TODO: 
-        task_logger.info('conn 1')
+        task_logger.debug('Iniciando Conexão...')
         conn = psycopg2.connect(
             host = host,
             port = port,
@@ -49,51 +49,47 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
             user= user,
             password = password
         )
-        task_logger.info('conn 2')
+        task_logger.debug('Conexão realizada!')
         conn.autocommit = True
         cur = conn.cursor()
         sql_truncate = f'TRUNCATE TABLE "{active_schema}"."{layer}" '
-        task_logger.info('conn 3')
 
         try: 
             cur.execute(sql_truncate)
-            task_logger.info(f"Camada {active_schema}.{layer} truncada")
-            task_logger.info('conn 4')
+            task_logger.info(f"Camada {active_schema}.{layer} truncada!")
         except Exception as e:
             task_logger.info(f"Erro ao truncar {active_schema}.{layer}")
             task_logger.info(f'{e} -> {e.__class__}')
         finally:
             cur.close()
             conn.close()
-            task_logger.info('conn 4')
-        result = subprocess.run(
-            [
+            task_logger.debug('Fechando cursor e conexão')
+
+        ogr_run = [
                 "ogr2ogr",
-                "-f",
-                "PostgreSQL",
+                "-f", "PostgreSQL",
                 f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
                 out_gdb,
                 layer, 
                 "-lco", "TRUNCATE=YES",
-                "-lco",
-                "launder=no",
+                "-lco", "launder=no",
                 "-forceNullable",
                 "-progress",
-                "--config",
-                "PG_USE_COPY",
-                "YES"
-            ],
-            capture_output=True,
-            text=True
-        )
-        task_logger.info('conn 5')
+                "--config", "PG_USE_COPY", "YES"
+            ]
+
+        task_logger.info("Executing OGR process: %s" % " ".join(ogr_run))
+
+        result = subprocess.run(ogr_run, capture_output=True, text=True)
+
+        task_logger.info('Finished OGR2OGR process')
+
         if result.returncode != 0:
-            task_logger.error(result.stderr)
-            exit(-1)
+            task_logger.info(result.stdout)
+            raise AirflowException(result.stderr)
 
         task_logger.info(result.stdout)
-        
-    return 0
+
 
 def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
     task_logger.info(f'conexão com o banco: {bd_conn}')
