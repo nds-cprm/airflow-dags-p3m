@@ -130,7 +130,8 @@ def ingest_to_gdb(sources: dict, temp_dir: str, out_file: str, **kwargs) -> str:
                         out_gdb,
                         layer=layer_name,
                         driver="OpenFileGDB",
-                        promote_to_multi=True
+                        promote_to_multi=True,
+                        layer_options={"TARGET_ARCGIS_VERSION": "ARCGIS_PRO_3_2_OR_LATER"}
                         )
                     task_logger.info(f"Written layer: {layer_name}")
 
