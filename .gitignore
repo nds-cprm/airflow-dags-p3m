@@ -172,3 +172,5 @@ docker-compose.yaml
 
 
 .history/
+
+.airflowignore

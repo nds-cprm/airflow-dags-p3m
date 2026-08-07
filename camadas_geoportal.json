@@ -191,7 +191,8 @@
         "col_renames": {},
         "out_db": {
             "schema": "cprm",
-            "table": "cprm_map_geo_50k"
+            "table": "cprm_map_geo_50k",
+            "ptm": "True"
         },
         "geoserver": {
             "workspace": "p3m",

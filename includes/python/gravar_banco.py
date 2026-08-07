@@ -3,6 +3,7 @@ import subprocess
 # import sys
 import re
 import logging
+import time
 import pandas as pd
 import psycopg2
 from sqlalchemy import text, create_engine
@@ -139,6 +140,8 @@ def gravar_banco_sgb(
     ):
 
     ti = kwargs["ti"]
+
+    task_logger.info(f'------------------------------ ptm={ptm}')
     
     dataset = ti.xcom_pull(key='silver_dataset')
 
@@ -172,8 +175,8 @@ def gravar_banco_sgb(
     except Exception as e:
         task_logger.info(f'Catch geom falhou\n {e}\n {e.__class__}')
         # tipo_geom = 'MULTIPOLYGON'
-    
-    if ptm == True:
+
+    if ptm != False:
         task_logger.info('Gravar SGB - ptm on')
         tipo_geom = 'PROMOTE_TO_MULTI'    
 

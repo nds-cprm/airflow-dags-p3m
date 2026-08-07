@@ -10,7 +10,7 @@ try:
     from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
 except ImportError:
     from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
 from p3m.includes.python.consumo import consumir_dado
@@ -135,10 +135,19 @@ atualizar_uranio=SQLExecuteQueryOperator(
     dag=cfem_dag,
     **pg_kwargs)
 
+trigger_guia_utilizacao = TriggerDagRunOperator(
+    task_id= 'trigger_guia_utilizacao', 
+    trigger_dag_id = 'anm_guia_utilizacao',
+    wait_for_completion = False,
+    dag = cfem_dag
+
+)
+
+
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b] #type:ignore
 
-branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_uranio>>atualizar_mvw_minas # type: ignore
+branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_uranio>>atualizar_mvw_minas>>trigger_guia_utilizacao # type: ignore
 
 branch_b>>criar_link#type:ignores
