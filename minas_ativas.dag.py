@@ -196,11 +196,15 @@ atualizar_mvwpma=SQLExecuteQueryOperator(
     sql="sql/atualizar_mvwpma.sql",
     **pg_kwargs)
 
-atualizar_mviews_novas = SQLExecuteQueryOperator(
-    task_id='p3m_etl_atualizar_mvnovas',
-    sql="sql/atualizar_mvnovas.sql",
+atualizar_mvw_pma_agrupado= SQLExecuteQueryOperator(
+    task_id='p3m_etl_pma_agrupado',
+    sql="sql/atualizar_pma_agrupado.sql",
     **pg_kwargs)
 
+atualizar_guia_utilizacao = SQLExecuteQueryOperator(
+    task_id='p3m_etl_guia_utilizacao',
+    sql="sql/atualizar_guia_utilizacao.sql",
+    **pg_kwargs)
 
 #Task para atualização da Data nos cards do dashboard
 atl_cards=SQLExecuteQueryOperator(
@@ -222,7 +226,7 @@ trigger_cfem = TriggerDagRunOperator(
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma, atualizar_mviews_novas]>>atl_cards>>trigger_cfem # type: ignore
+branch_a>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atualizar_mvw_pma_agrupado>>atualizar_guia_utilizacao>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 

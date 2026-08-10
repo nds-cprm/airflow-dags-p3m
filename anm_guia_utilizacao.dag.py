@@ -109,10 +109,7 @@ gravar_dados = PythonOperator(
     op_args=[bd_conn, "anm", "TB_GuiaUtilizacao", "gu_read_table", 'OBJECTID'],
     dag=gu_dag)
 
-atualizar_mviews_novas = SQLExecuteQueryOperator(
-    task_id='p3m_etl_atualizar_mvnovas',
-    sql="sql/atualizar_mvnovas.sql",
-    **pg_kwargs)
+
 
 
 def make_branch(ti):
@@ -127,7 +124,7 @@ def make_branch(ti):
 
 consumo_dados>>read_table>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
-branch_a>>gravar_dados>>atualizar_mviews_novas#type:ignore
+branch_a>>gravar_dados#type:ignore
 
 branch_b>>criar_link#type:ignore
 

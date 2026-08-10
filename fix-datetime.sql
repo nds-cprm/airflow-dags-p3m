@@ -140,3 +140,19 @@ AS SELECT
     cprm_ocorr_min.tp_alteracao,
     cprm_ocorr_min.id as objectid,
    FROM cprm.cprm_ocorr_min;
+
+   ----
+
+
+   DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN 
+        SELECT matviewname 
+        FROM pg_matviews 
+        WHERE schemaname = 'geoserver'
+    LOOP
+        EXECUTE format('REFRESH MATERIALIZED VIEW geoserver.%I WITH NO DATA;', r.matviewname);
+    END LOOP;
+END $$;
