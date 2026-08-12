@@ -57,13 +57,13 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         layers=anm_layers,
         layerCreationOptions={
             "LAUNDER": "NO",
-            "FID": "OBJECTID",
-            "FID_TYPE": "INTEGER",
             "OVERWRITE": "NO"
         },
         forceNullable=True,
-        preserveFID=True
+        preserveFID=True,
     )
+
+    # /tmp/p3m/minas-ativas/2026/08/11/DBANM.gdb
 
     gdal.VectorTranslate(
         out_postgis,   # dst (postgresql)
