@@ -42,6 +42,25 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
 
     gdal.UseExceptions()
 
+    def gdal_error_handler(err_class, err_no, err_msg):
+        # Remover quebras de linha duplicadas da mensagem
+        err_msg = err_msg.strip()
+        
+        # Mapeamento de classes de erro do GDAL para o logging do Python
+        if err_class == gdal.CE_Debug:
+            logging.debug(f"GDAL Debug [{err_no}]: {err_msg}")
+        elif err_class == gdal.CE_None:
+            logging.info(f"GDAL Info [{err_no}]: {err_msg}")
+        elif err_class == gdal.CE_Warning:
+            logging.warning(f"GDAL Warning [{err_no}]: {err_msg}")
+        elif err_class in (gdal.CE_Failure, gdal.CE_Fatal):
+            logging.error(f"GDAL Error [{err_no}]: {err_msg}")
+        else:
+            pass
+
+    # 2. Registra o handler globalmente (faça isso no escopo do seu DAG ou na task)
+    gdal.SetErrorHandler(gdal_error_handler)
+
     GDAL_CONFIG_OPTIONS = [
         ("CPL_DEBUG", "ON"), 
         ("OGR_TRUNCATE", "YES"), 
