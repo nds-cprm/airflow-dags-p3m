@@ -126,7 +126,7 @@ gravar_dados = BashOperator(
     ogr2ogr -append \
       -f "PostgreSQL" \
       "PG:host={{ conn.p3m_homolog.host }} dbname={{ conn.p3m_homolog.schema }} active_schema=anm \
-         "user={{ conn.p3m_homolog.login }} password={{ conn.p3m_homolog.password }} port={{ conn.p3m_homolog.port }}" \
+          user={{ conn.p3m_homolog.login }} password={{ conn.p3m_homolog.password }} port={{ conn.p3m_homolog.port }}" \
       "{{ ti.xcom_pull(key='a_path') }}" \
       "FC_ProcessoTotal" \
       -lco LAUNDER=NO \
