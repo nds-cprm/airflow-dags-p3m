@@ -75,7 +75,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         accessMode="append",
         layers=anm_layers,
         layerCreationOptions={
-            "LAUNDER": "NO",
+            # "LAUNDER": "NO",
             "OVERWRITE": "NO"
         },
         forceNullable=True,

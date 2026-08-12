@@ -120,31 +120,31 @@ criar_link = PythonOperator(
 #     dag=etl_dag
 # )
 
-gravar_dados = BashOperator(
-    task_id='p3m_etl_gravar_dados',
-    bash_command="""
-    ogr2ogr -append \
-      -f "PostgreSQL" \
-      "PG:host={{ conn.p3m_homolog.host }} dbname={{ conn.p3m_homolog.schema }} active_schema=anm \
-          user={{ conn.p3m_homolog.login }} password={{ conn.p3m_homolog.password }} port={{ conn.p3m_homolog.port }}" \
-      "{{ ti.xcom_pull(key='a_path') }}" \
-      "FC_ProcessoTotal" \
-      -lco LAUNDER=NO \
-      -lco OVERWRITE=NO \
-      -forceNullable \
-      -preserve_fid \
-      --config PG_USE_COPY YES \
-      --config CPL_DEBUG ON \
-      --config OGR_TRUNCATE YES 
-    """
-)
+# gravar_dados = BashOperator(
+#     task_id='p3m_etl_gravar_dados',
+#     bash_command="""
+#     ogr2ogr -append \
+#       -f "PostgreSQL" \
+#       "PG:host={{ conn.p3m_homolog.host }} dbname={{ conn.p3m_homolog.schema }} active_schema=anm \
+#           user={{ conn.p3m_homolog.login }} password={{ conn.p3m_homolog.password }} port={{ conn.p3m_homolog.port }}" \
+#       "{{ ti.xcom_pull(key='a_path') }}" \
+#       "FC_ProcessoTotal" \
+#       -lco LAUNDER=NO \
+#       -lco OVERWRITE=NO \
+#       -forceNullable \
+#       -preserve_fid \
+#       --config PG_USE_COPY YES \
+#       --config CPL_DEBUG ON \
+#       --config OGR_TRUNCATE YES 
+#     """
+# )
 
-# # Task para salvar os dados no banco de dados
-# gravar_dados = PythonOperator(
-#     task_id = 'p3m_etl_gravar_dados',
-#     python_callable = gravar_banco,
-#     op_args=[d_folder, bd_conn],
-#     dag=etl_dag)
+# Task para salvar os dados no banco de dados
+gravar_dados = PythonOperator(
+    task_id = 'p3m_etl_gravar_dados',
+    python_callable = gravar_banco,
+    op_args=[d_folder, bd_conn],
+    dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
 montar_tabela= SQLExecuteQueryOperator(
