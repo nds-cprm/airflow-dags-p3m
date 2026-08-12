@@ -1,9 +1,7 @@
 
 import subprocess
-# import sys
 import re
 import logging
-import time
 import pandas as pd
 import psycopg2
 from sqlalchemy import text, create_engine
@@ -11,85 +9,67 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.hooks.base import BaseHook #type:ignore
 from airflow.models import Variable
 from airflow.exceptions import AirflowException
-# import geopandas as gpd
+from osgeo import gdal
 
-LAYERS = [
-    "TB_Processo",
-    "TB_ProcessoPessoa",
-    "TB_ProcessoEvento",
-    "TB_ProcessoMunicipio",
-    "TB_Pessoa",
-    "TB_ProcessoSubstancia",
-    "FC_ProcessoTotal"
-]
 
 task_logger = logging.getLogger("airflow.task")
 
+gdal.UseExceptions()
+
+GDAL_CONFG_OPTIONS = [
+    ("CPL_DEBUG", "ON"), 
+    ("OGR_TRUNCATE", "YES"), 
+    ("PG_USE_COPY", "YES")
+]
+
+
+class OGRPostgresHook(PostgresHook):
+    def get_ogr_datasource_str(self, schema=None) -> str:
+        conn = self.connection
+        ogr_ds = f"PG:host={conn.host} port={conn.port} dbname={conn.schema} user={conn.login} password={conn.password}"
+
+        if schema:
+            ogr_ds = f"{ogr_ds} active_schema={schema}"
+        
+        return ogr_ds
+    
+
 def gravar_banco(temp_dir, bd_conn, **kwargs):
+    in_gdb = kwargs["ti"].xcom_pull(key='a_path')  
+    out_postgis = OGRPostgresHook(postgres_conn_id=bd_conn).get_ogr_datasource_str(schema="anm")
 
-    conn = PostgresHook.get_connection(bd_conn)
+    anm_layers = [
+        "TB_Processo",
+        "TB_ProcessoPessoa",
+        "TB_ProcessoEvento",
+        "TB_ProcessoMunicipio",
+        "TB_Pessoa",
+        "TB_ProcessoSubstancia",
+        "FC_ProcessoTotal"
+    ]
 
-    dbname = conn.schema
-    host = conn.host
-    password = conn.password
-    user = conn.login
-    port = conn.port
-    active_schema = "anm" # Substituir o nome do schema onde serão processados e salvo os dados  
+    for k, v in GDAL_CONFG_OPTIONS:
+        gdal.SetConfigOption(k, v)
 
-    out_gdb = kwargs["ti"].xcom_pull(key='a_path')  
- 
-    for layer in LAYERS:
-        # TODO: Trocar por PyGDAL -> Conflita versões de python
-        #----------------------------
-        # TODO: 
-        task_logger.debug('Iniciando Conexão...')
-        conn = psycopg2.connect(
-            host = host,
-            port = port,
-            dbname = dbname,
-            user= user,
-            password = password
-        )
-        task_logger.debug('Conexão realizada!')
-        conn.autocommit = True
-        cur = conn.cursor()
-        sql_truncate = f'TRUNCATE TABLE "{active_schema}"."{layer}" '
+    options = gdal.VectorTranslateOptions(
+        format="PostgreSQL",
+        accessMode="append",
+        layers=anm_layers,
+        layerCreationOptions={
+            "LAUNDER": "NO",
+            "FID": "OBJECTID ",
+            "FID_TYPE": "INTEGER",
+            "OVERWRITE": "NO"
+        },
+        forceNullable=True,
+        preserveFID=True
+    )
 
-        try: 
-            cur.execute(sql_truncate)
-            task_logger.info(f"Camada {active_schema}.{layer} truncada!")
-        except Exception as e:
-            task_logger.info(f"Erro ao truncar {active_schema}.{layer}")
-            task_logger.info(f'{e} -> {e.__class__}')
-        finally:
-            cur.close()
-            conn.close()
-            task_logger.debug('Fechando cursor e conexão')
-
-        ogr_run = [
-                "ogr2ogr",
-                "-f", "PostgreSQL",
-                f"PG: host={host} port={port} dbname={dbname} active_schema={active_schema} user={user} password={password}",
-                out_gdb,
-                layer, 
-                "-lco", "TRUNCATE=YES",
-                "-lco", "launder=no",
-                "-forceNullable",
-                "-progress",
-                "--config", "PG_USE_COPY", "YES"
-            ]
-
-        task_logger.info("Executing OGR process: %s" % " ".join(ogr_run))
-
-        result = subprocess.run(ogr_run, capture_output=True, text=True)
-
-        task_logger.info('Finished OGR2OGR process')
-
-        if result.returncode != 0:
-            task_logger.info(result.stdout)
-            raise AirflowException(result.stderr)
-
-        task_logger.info(result.stdout)
+    gdal.VectorTranslate(
+        out_postgis,   # dst (postgresql)
+        in_gdb,        # src (FileGDB)
+        options=options
+    )
 
 
 def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
