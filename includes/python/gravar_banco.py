@@ -14,14 +14,6 @@ from osgeo import gdal
 
 task_logger = logging.getLogger("airflow.task")
 
-gdal.UseExceptions()
-
-GDAL_CONFG_OPTIONS = [
-    ("CPL_DEBUG", "ON"), 
-    ("OGR_TRUNCATE", "YES"), 
-    ("PG_USE_COPY", "YES")
-]
-
 
 class OGRPostgresHook(PostgresHook):
     def get_ogr_datasource_str(self, schema=None) -> str:
@@ -48,7 +40,15 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         "FC_ProcessoTotal"
     ]
 
-    for k, v in GDAL_CONFG_OPTIONS:
+    gdal.UseExceptions()
+
+    GDAL_CONFIG_OPTIONS = [
+        ("CPL_DEBUG", "ON"), 
+        ("OGR_TRUNCATE", "YES"), 
+        ("PG_USE_COPY", "YES")
+    ]
+
+    for k, v in GDAL_CONFIG_OPTIONS:
         gdal.SetConfigOption(k, v)
 
     options = gdal.VectorTranslateOptions(
@@ -57,7 +57,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         layers=anm_layers,
         layerCreationOptions={
             "LAUNDER": "NO",
-            "FID": "OBJECTID ",
+            "FID": "OBJECTID",
             "FID_TYPE": "INTEGER",
             "OVERWRITE": "NO"
         },
