@@ -147,10 +147,10 @@ gravar_dados = PythonOperator(
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
-montar_tabela= SQLExecuteQueryOperator(
-    task_id='p3m_etl_montar_tabela',
-    sql="sql/montar_tabela.sql",
-    **pg_kwargs)
+# montar_tabela= SQLExecuteQueryOperator(
+#     task_id='p3m_etl_montar_tabela',
+#     sql="sql/montar_tabela.sql",
+#     **pg_kwargs)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
 inativos_log =PythonOperator(
@@ -246,7 +246,7 @@ trigger_cfem = TriggerDagRunOperator(
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atualizar_mvw_pma_agrupado>>atualizar_guia_utilizacao>>atl_cards>>trigger_cfem # type: ignore
+branch_a>>gravar_dados>>inativos_log>>duplicados_log>>geom_log>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>atualizar_mvwcadastro>>atualizar_mvwevt>>atualizar_mvwpma>>atualizar_mvw_pma_agrupado>>atualizar_guia_utilizacao>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 

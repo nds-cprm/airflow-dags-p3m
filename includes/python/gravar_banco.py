@@ -17,7 +17,7 @@ task_logger = logging.getLogger("airflow.task")
 
 class OGRPostgresHook(PostgresHook):
     def get_ogr_datasource_str(self, schema=None) -> str:
-        conn = self.connection
+        conn = self.get_connection(self.postgres_conn_id)
         ogr_ds = f"PG:host={conn.host} port={conn.port} dbname={conn.schema} user={conn.login} password={conn.password}"
 
         if schema:
@@ -74,12 +74,13 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         format="PostgreSQL",
         accessMode="append",
         layers=anm_layers,
+        options=['-preserve_fid'],
         layerCreationOptions={
             # "LAUNDER": "NO",
             "OVERWRITE": "NO"
         },
         forceNullable=True,
-        preserveFID=True,
+        #preserveFID=True,
     )
 
     # /tmp/p3m/minas-ativas/2026/08/11/DBANM.gdb
