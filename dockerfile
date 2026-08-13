@@ -1,4 +1,7 @@
-FROM apache/airflow:2.7.1-python3.9
+ARG AIRFLOW_VERSION=2.11.2
+ARG PYTHON_VERSION=3.12
+
+FROM apache/airflow:${AIRFLOW_VERSION}-python${PYTHON_VERSION}
 
 USER root
 ENV TZ=America/Sao_Paulo
@@ -12,11 +15,12 @@ RUN apt-get update && \
         librtmp-dev \
         gdal-bin \
         libgdal-dev \
-        python3-gdal && \
+        build-essential && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /requirements.txt
 
 USER airflow
-RUN pip install --no-cache-dir -r /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt && \
+    pip install "gdal==$(gdal-config --version).*" --global-option=build_ext --global-option="-I/usr/include/gdal" --global-option="-L/usr/lib" 

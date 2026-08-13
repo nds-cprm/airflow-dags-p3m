@@ -144,7 +144,7 @@ AS SELECT
    ----
 
 
-   DO $$
+DO $$
 DECLARE
     r RECORD;
 BEGIN
@@ -156,3 +156,15 @@ BEGIN
         EXECUTE format('REFRESH MATERIALIZED VIEW geoserver.%I WITH NO DATA;', r.matviewname);
     END LOOP;
 END $$;
+
+TRUNCATE TABLE anm.FC_Arrendamento;
+TRUNCATE TABLE anm.FC_Disponibilidade;
+TRUNCATE TABLE anm.FC_ProcessoAtivo;
+TRUNCATE TABLE anm.FC_ProcessoTotal;
+TRUNCATE TABLE anm.TB_GuiaUtilizacao;
+TRUNCATE TABLE anm.TB_Pessoa;
+TRUNCATE TABLE anm.TB_Processo;
+TRUNCATE TABLE anm.TB_ProcessoEvento;
+TRUNCATE TABLE anm.TB_ProcessoMunicipio;
+TRUNCATE TABLE anm.TB_ProcessoPessoa;
+TRUNCATE TABLE anm.TB_ProcessoSubstancia;
