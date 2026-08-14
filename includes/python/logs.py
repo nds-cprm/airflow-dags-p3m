@@ -12,10 +12,10 @@ task_logger = logging.getLogger("airflow.task")
 def log_inativos(bd_conn):
     conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
     cursor = conn.cursor()
-    query_inat='''select ft."DSProcesso" 
-                    from anm."FC_ProcessoTotal" ft 
-                    left join anm."TB_Processo" tp on ft."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S' 
-                    where tp."IDTipoRequerimento" is null;'''
+    query_inat='''select ft.dsprocesso 
+                    from anm.fc_processototal ft 
+                    left join anm.tb_processo tp on ft.dsprocesso = tp.dsprocesso and tp.btativo ='S' 
+                    where tp.idtiporequerimento is null;'''
     cursor.execute(query_inat)
     rows = cursor.fetchall()
     task_logger.info('Processos inativos:')
@@ -26,9 +26,9 @@ def log_inativos(bd_conn):
 def log_duplicados(bd_conn):
     conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
     cursor = conn.cursor()    
-    query_dupli='''select ft."DSProcesso", count(ft."DSProcesso")
-                    from anm."FC_ProcessoTotal" ft
-                    group by ft."DSProcesso", ft."QTAreaHA", ft."SHAPE"  
+    query_dupli='''select ft.dsprocesso, count(ft.dsprocesso)
+                    from anm.fc_processoTotal" ft
+                    group by ft.dsprocesso, ft.qtareaha, ft.shape  
                     having count(*) > 1;'''
     cursor.execute(query_dupli)
     rows = cursor.fetchall()
@@ -42,18 +42,18 @@ def log_duplicados(bd_conn):
 def log_geom(bd_conn):
     conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
     cursor = conn.cursor()    
-    query_geom1='''select (ft."DSProcesso"), st_isvalidreason(ft."SHAPE")
-                    from anm."FC_ProcessoTotal" ft 
-                    where st_isvalid(ft."SHAPE") is false;'''
+    query_geom1='''select (ft.dsprocesso), st_isvalidreason(ft.shape)
+                    from anm.fc_processototal ft 
+                    where st_isvalid(ft.shape) is false;'''
     cursor.execute(query_geom1)
     rows = cursor.fetchall()
     task_logger.info('Problemas de geometria')
     task_logger.info('Geometria inválida:')
     for row in rows:
         task_logger.info('Processo: {0}'.format(row[0]))
-    query_geom2='''select ft."DSProcesso"
-                    from anm."FC_ProcessoTotal" ft
-                    where st_ndims(ft."SHAPE") != 2;'''
+    query_geom2='''select ft.dsprocesso
+                    from anm.fc_processoTotal ft
+                    where st_ndims(ft.shape) != 2;'''
     cursor.execute(query_geom2)
     rows = cursor.fetchall()
     task_logger.info('Coordenada z:')
