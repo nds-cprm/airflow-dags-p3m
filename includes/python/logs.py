@@ -27,7 +27,7 @@ def log_duplicados(bd_conn):
     conn = PostgresHook(postgres_conn_id=bd_conn).get_conn()
     cursor = conn.cursor()    
     query_dupli='''select ft.dsprocesso, count(ft.dsprocesso)
-                    from anm.fc_processoTotal" ft
+                    from anm.fc_processoTotal ft
                     group by ft.dsprocesso, ft.qtareaha, ft.shape  
                     having count(*) > 1;'''
     cursor.execute(query_dupli)
