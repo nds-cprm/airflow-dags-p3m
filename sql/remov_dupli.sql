@@ -5,7 +5,7 @@
 delete from anm.fc_processototal ft
 using (
 	select ftt.dsprocesso, ftt.qtareaha, ftt.shape, min(ftt.objectid) as min_obj
-	from anm.fc_processototalftt
+	from anm.fc_processototal ftt
 	group by ftt.dsprocesso, ftt.qtareaha, ftt.shape  
 	having count(*) > 1
 ) as sbq
