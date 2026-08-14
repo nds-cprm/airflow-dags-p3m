@@ -246,7 +246,7 @@ trigger_cfem = TriggerDagRunOperator(
 consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
 
 # branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>inativos_log>>duplicados_log>>geom_log>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>atualizar_mvwcadastro>>atualizar_mvwevt>>atualizar_mvwpma>>atualizar_mvw_pma_agrupado>>atualizar_minas_ativas_grp>>atl_cards>>trigger_cfem # type: ignore
+branch_a>>gravar_dados>>inativos_log>>duplicados_log>>geom_log>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>atualizar_mvwcadastro>>atualizar_mvwevt>>atualizar_mvwpma>>atualizar_mvw_pma_agrupado>>atualizar_mvwminasativas>>atl_cards>>trigger_cfem # type: ignore
 
 branch_b>>criar_link>>atl_cards#type:ignore
 
