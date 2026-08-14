@@ -221,8 +221,8 @@ atualizar_mvw_pma_agrupado= SQLExecuteQueryOperator(
     sql="sql/atualizar_pma_agrupado.sql",
     **pg_kwargs)
 
-atualizar_minas_ativas_grp = SQLExecuteQueryOperator(
-    task_id='p3m_etl_minas_ativas_grp',
+atualizar_mvwminasativas = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwminasativas',
     sql="sql/atualizar_mvw_minas_atv.sql",
     **pg_kwargs)
 
