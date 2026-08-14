@@ -5,7 +5,7 @@ refresh materialized view geoserver.mvw_processos_minerarios_ativos;
 
 reindex (verbose) table geoserver.mvw_processos_minerarios_ativos;
 
-/* Está o arquivo atualizar_pma_agrupado.sql
+/* Está o arquivo atualizar_pma_agrupado.sql */
 -- refresh materialized view geoserver.mvw_pma_agrupado;
 -- reindex (verbose) table geoserver.mvw_pma_agrupado;
 
