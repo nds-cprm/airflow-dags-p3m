@@ -2,6 +2,6 @@
 --executada após todos os tratamentos
 --comando vacuum não pode ser utilizado em bloco
 
-vacuum (verbose,analyze) anm."FC_ProcessoTotal";
+vacuum (verbose,analyze) anm.fc_processototal;
 
     
