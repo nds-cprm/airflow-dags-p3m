@@ -226,6 +226,16 @@ atualizar_mvwminasativas = SQLExecuteQueryOperator(
     sql="sql/atualizar_mvw_minas_atv.sql",
     **pg_kwargs)
 
+atualizar_mvwgrupos_minerarios = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwgrupos_minerarios',
+    sql="sql/atualizar_mvw_grupos_minerarios.sql",
+    **pg_kwargs)
+
+atualizar_mvwativos_sgb = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwativos_sgb',
+    sql="sql/atualizar_mvw_ativos_sgb.sql",
+    **pg_kwargs)
+
 #Task para atualização da Data nos cards do dashboard
 atl_cards=SQLExecuteQueryOperator(
     task_id='p3m_atualizar_cards',
@@ -241,12 +251,29 @@ trigger_cfem = TriggerDagRunOperator(
 
 )
 
-#Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
+# Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dadoss
+consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
+# Branch A
+(
+    branch_a >> 
+    gravar_dados >>
+    inativos_log >>
+    duplicados_log >> 
+    geom_log >> 
+    remover_inativos >> 
+    remover_duplicados >> 
+    corrigir_geom >> 
+    vacuum >> 
+    atualizar_index >> 
+    atualizar_mvwcadastro >> 
+    atualizar_mvwevt >> 
+    atualizar_mvwpma >> 
+    atualizar_mvw_pma_agrupado >> 
+    [atualizar_mvwminasativas, atualizar_mvwgrupos_minerarios, atualizar_mvwativos_sgb] >>
+    atl_cards >> 
+    [trigger_cfem] # type: ignore
+)
 
-# branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>inativos_log>>duplicados_log>>geom_log>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>atualizar_mvwcadastro>>atualizar_mvwevt>>atualizar_mvwpma>>atualizar_mvw_pma_agrupado>>atualizar_mvwminasativas>>atl_cards>>trigger_cfem # type: ignore
-
-branch_b>>criar_link>>atl_cards#type:ignore
-
+# Branch B
+branch_b >> criar_link >> atl_cards#type:ignore
