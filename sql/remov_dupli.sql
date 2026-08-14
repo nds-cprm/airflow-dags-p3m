@@ -1,4 +1,4 @@
-eaha--Query para remover processos duplicados
+--Query para remover processos duplicados
 --Faz a procura de registros duplicados com base no DSProcesso, QTAreaHa e Geometria(shape)
 --seleciona o menor objectid entre os registros como sendo o primeiro registro daquele processo como min_obj
 --após isso apaga da tabela original os registros que repetem os campos de verificação e tem o objectid menor que o identificado na sbq
