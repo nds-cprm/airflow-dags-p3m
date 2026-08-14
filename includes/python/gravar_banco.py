@@ -106,7 +106,7 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
     table = tb
     pk_name = pk
 
-    in_parquet = kwargs["ti"].xcom_pull(task_ids=taskid, key='return_value')
+    in_dataset = kwargs["ti"].xcom_pull(task_ids=taskid, key='return_value')
 
     with engine.connect() as db_conn:
         to_sql_kwargs = dict(
@@ -124,7 +124,7 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
                 db_conn.execute(text(f'TRUNCATE TABLE "{schema}"."{table}";'))
 
                 logging.info("Carregando novos dados de CFEM...")
-                pd.read_parquet(in_parquet).to_sql(**to_sql_kwargs)
+                pd.read_file(in_dataset, layer="cfem_tratada").to_sql(**to_sql_kwargs)
 
         except Exception as e:
             logging.error(str(e))

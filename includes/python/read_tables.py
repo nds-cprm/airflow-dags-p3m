@@ -62,28 +62,28 @@ def convert_table(**kwargs):
             lambda df: df["DataRecolhimentoCFEM"] >= (today - delta)
         ]
         .rename(
-            columns=lambda col: slugify(decamelize(col), separator="_").replace("p_f", "pf") # decamelize não está funcionando em traduzir PF em pf (resulta em p_f) -> nome do campo original: 'tipo-p-f-pj'
-        ).rename(
-    columns={
-             "processo": "processo_ano",
-             "codigo_municipio": "codigomunicipio",
-             "quantidade_comercializada":"qt_comercializada",
-             "unidade_de_medida": "un_medida",
-             "valor_recolhido": "vl_recolhido",
-             "data_geracao_cfem": "data_criacao",
-             "DataRecolhimentoCFEM": "data_recolhimento_cfem"
-             }
-)
+            columns=lambda col: col.lower() # slugify(decamelize(col), separator="_").replace("p_f", "pf") # decamelize não está funcionando em traduzir PF em pf (resulta em p_f) -> nome do campo original: 'tipo-p-f-pj'
+        )
+        .rename(
+            columns={
+                "processo": "processo_ano",
+                "codigomunicipio": "codigomunicipio",
+                "quantidadecomercializada":"qt_comercializada",
+                "unidadedemedida": "un_medida",
+                "valorrecolhido": "vl_recolhido",
+                "datageracaocfem": "data_criacao",
+                "datarecolhimentocfem": "data_recolhimento_cfem"
+            }
+        )
     )
 
-    out_parquet = temp_folder.joinpath("cfem_tratada.parquet")
+    out_dataset = temp_folder.joinpath("cfem_tratada.gpkg")
+    data.to_file(out_dataset, layer="cfem_tratada", driver="GPKG")
 
-    data.to_parquet(out_parquet)
+    return out_dataset.as_posix()
 
-    return out_parquet.as_posix()
 
 def convert_table_gu(**kwargs):
-
     temp_folder = Path(kwargs['temp_folder'])
 
     csv_file = Path(kwargs["ti"].xcom_pull(key='a_path'))
@@ -95,8 +95,7 @@ def convert_table_gu(**kwargs):
     data['guia'] = data['guia'].fillna(0).astype(int)
     data['datapublicacao'] = pd.to_datetime(data['datapublicacao'], format="%Y-%m-%d", errors='coerce')
     
-    out_parquet = temp_folder.joinpath(f"{kwargs['nome']}.parquet")
+    out_dataset = temp_folder.joinpath(f"{kwargs['nome']}.gpkg")
+    data.to_file(out_dataset, layer="guia_utilizacao_tratada", driver="GPKG")
 
-    data.to_parquet(out_parquet)
-
-    return out_parquet.as_posix()
+    return out_dataset.as_posix()
