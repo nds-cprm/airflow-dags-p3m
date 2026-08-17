@@ -246,7 +246,7 @@ atl_cards=SQLExecuteQueryOperator(
 trigger_cfem = TriggerDagRunOperator(
     task_id= 'trigger_cfem', 
     trigger_dag_id = 'p3m_cfem',
-    wait_for_completion = False,
+    wait_for_completion = True,
     dag = etl_dag
 )
 
@@ -277,10 +277,18 @@ consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
     atualizar_mvwevt >> 
     atualizar_mvwpma >> 
     atualizar_mvw_pma_agrupado >> 
-    [atualizar_mvwminasativas, atualizar_mvwgrupos_minerarios, atualizar_mvwativos_sgb] >>
-    atl_cards >> 
-    [trigger_cfem, trigger_guia_utilizacao] # type: ignore
+    [atualizar_mvwminasativas, atualizar_mvwativos_sgb, trigger_cfem] 
 )
+
+trigger_cfem >> atualizar_mvwgrupos_minerarios
+
+(
+    [atualizar_mvwminasativas, atualizar_mvwativos_sgb, atualizar_mvwgrupos_minerarios] >>
+    atl_cards >> 
+    trigger_guia_utilizacao # type: ignore
+)
+
+
 
 # Branch B
 branch_b >> criar_link >> atl_cards#type:ignore
