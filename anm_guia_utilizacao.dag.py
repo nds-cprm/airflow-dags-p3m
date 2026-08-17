@@ -110,21 +110,16 @@ gravar_dados = PythonOperator(
     dag=gu_dag)
 
 
+atualizar_mvw = SQLExecuteQueryOperator(
+    task_id='p3m_atualizar_mvw_guia_utilizacao',
+    sql="sql/atualizar_mvw_guia_utilizacao.sql",
+    **pg_kwargs
+)
 
 
-def make_branch(ti):
-    r=ti.xcom_pull(task_ids='Checksum_guia_utilizacao')
-    if r==1:
-       return 'gu_branch_a'
-    else:
-        return 'gu_branch_b'
+consumo_dados >> read_table >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
 
-
-
-
-consumo_dados>>read_table>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
-
-branch_a>>gravar_dados#type:ignore
+branch_a >> gravar_dados >> atualizar_mvw #type:ignore
 
 branch_b>>criar_link#type:ignore
 
