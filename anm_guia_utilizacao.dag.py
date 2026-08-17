@@ -26,7 +26,7 @@ url_data = Variable.get("gu_data")
 d_folder = Variable.get("d_folder")
 
 def make_branch(ti):
-    r=ti.xcom_pull(task_ids='Checksum_guia_utilizacao')
+    r=ti.xcom_pull(task_ids='p3m_gu_checksum')
     if r==1:
        return 'p3m_gu_branch_a'
     else:
