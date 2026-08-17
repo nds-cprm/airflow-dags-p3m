@@ -106,7 +106,7 @@ criar_link = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'Gravar_Dados_guia_utilizacao',
     python_callable = gravar_csv_banco,
-    op_args=[bd_conn, "anm", "TB_GuiaUtilizacao", "gu_read_table", 'OBJECTID'],
+    op_args=[bd_conn, "anm", "tb_guiautilizacao", "gu_read_table", 'objectid'],
     dag=gu_dag)
 
 
