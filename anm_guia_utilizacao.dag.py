@@ -28,9 +28,9 @@ d_folder = Variable.get("d_folder")
 def make_branch(ti):
     r=ti.xcom_pull(task_ids='Checksum_guia_utilizacao')
     if r==1:
-       return 'gu_branch_a'
+       return 'p3m_gu_branch_a'
     else:
-        return 'gu_branch_b'
+        return 'p3m_gu_branch_b'
 
 #Definição da DAG
 gu_dag = DAG (
