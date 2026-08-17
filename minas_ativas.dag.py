@@ -248,8 +248,15 @@ trigger_cfem = TriggerDagRunOperator(
     trigger_dag_id = 'p3m_cfem',
     wait_for_completion = False,
     dag = etl_dag
-
 )
+
+trigger_guia_utilizacao = TriggerDagRunOperator(
+    task_id= 'trigger_guia_utilizacao', 
+    trigger_dag_id = 'anm_guia_utilizacao',
+    wait_for_completion = False,
+    dag = etl_dag
+)
+
 
 # Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dadoss
 consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
@@ -272,7 +279,7 @@ consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
     atualizar_mvw_pma_agrupado >> 
     [atualizar_mvwminasativas, atualizar_mvwgrupos_minerarios, atualizar_mvwativos_sgb] >>
     atl_cards >> 
-    [trigger_cfem] # type: ignore
+    [trigger_cfem, trigger_guia_utilizacao] # type: ignore
 )
 
 # Branch B
