@@ -34,7 +34,7 @@ def make_branch(ti):
 
 #Definição da DAG
 gu_dag = DAG (
-        'anm_guia_utilizacao', 
+        'p3m_guia_utilizacao', 
         default_args = {
         "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
         "email_on_failure": True
@@ -60,7 +60,7 @@ else:
 
 #Task que fazer o download e salva o arquivo
 consumo_dados = PythonOperator(
-    task_id='consumir_dado_guia_utilizacao',
+    task_id='p3m_gu_consumo',
     python_callable=consumir_dado,
     op_args=[
         url_data,
@@ -73,45 +73,45 @@ consumo_dados = PythonOperator(
 #Task que faz a verificação de atualização dos dados utilizando o hash sha256 para verificar se é necessária a execução de todo o processo
 #{{prev_start_date_success | ds_nodash}} macro que retorna a data de inicialização da utlima utilização bem sucedida para identificação do diretorio e comparação das bases
 check_sum = PythonOperator(
-    task_id='Checksum_guia_utilizacao',
+    task_id='p3m_gu_checksum',
     python_callable=checkhash,
     provide_context=True,
     op_kwargs={'dir':d_folder},
     dag=gu_dag
 )
 read_table = PythonOperator(
-    task_id='gu_read_table',
+    task_id='p3m_gu_read_table',
     python_callable=convert_table_gu,
     op_kwargs={'temp_folder':d_folder, 'nome': 'guia_utilizacao'},
     dag=gu_dag)
 
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
 branching = BranchPythonOperator(
-    task_id='branch',
+    task_id='p3m_gu_branch',
     python_callable=make_branch,
     dag=gu_dag
 )
 #Task's baseadas em operadores vazios que tem como objetivo único inicializar a branch indicada pela operador de branch da task anterior
-branch_a= EmptyOperator(task_id='gu_branch_a')
+branch_a= EmptyOperator(task_id='p3m_gu_branch_a')
 
-branch_b= EmptyOperator(task_id='gu_branch_b')
+branch_b= EmptyOperator(task_id='p3m_gu_branch_b')
 
 #Task que cria o link simbólico de redirecionamento de diretorio de backup em caso de tentativas de execução quando não houve atualização da base
 criar_link = PythonOperator(
-    task_id='p3m_criar_link',
+    task_id='p3m_gu_criar_link',
     python_callable=simbolic_link,
     dag=gu_dag
 )
 
 gravar_dados = PythonOperator(
-    task_id = 'Gravar_Dados_guia_utilizacao',
+    task_id = 'p3m_gu_gravar',
     python_callable = gravar_csv_banco,
     op_args=[bd_conn, "anm", "tb_guiautilizacao", "gu_read_table", 'objectid'],
     dag=gu_dag)
 
 
 atualizar_mvw = SQLExecuteQueryOperator(
-    task_id='p3m_atualizar_mvw_guia_utilizacao',
+    task_id='p3m_gu_atualizar_matview',
     sql="sql/atualizar_mvw_guia_utilizacao.sql",
     **pg_kwargs
 )
