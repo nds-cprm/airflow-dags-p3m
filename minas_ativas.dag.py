@@ -252,7 +252,7 @@ trigger_cfem = TriggerDagRunOperator(
 
 trigger_guia_utilizacao = TriggerDagRunOperator(
     task_id= 'trigger_guia_utilizacao', 
-    trigger_dag_id = 'anm_guia_utilizacao',
+    trigger_dag_id = 'p3m_guia_utilizacao',
     wait_for_completion = False,
     dag = etl_dag
 )
