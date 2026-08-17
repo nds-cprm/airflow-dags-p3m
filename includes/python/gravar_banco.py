@@ -92,7 +92,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
     )
 
 
-def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
+def gravar_csv_banco(bd_conn, **kwargs):
     task_logger.info(f'conexão com o banco: {bd_conn}')
     hook = PostgresHook(postgres_conn_id=bd_conn)    
 
@@ -102,11 +102,8 @@ def gravar_csv_banco(bd_conn, sch, tb, taskid, pk,  **kwargs):
         f"@{raw.host}:{raw.port or 5432}/{raw.schema}"
     )
 
-    schema = sch
-    table = tb
-    pk_name = pk
-
-    in_parquet = kwargs["ti"].xcom_pull(task_ids=taskid, key='return_value')
+    schema, table, pk_name = "anm", "tb_guiautilizacao", 'objectid'
+    in_parquet = kwargs["ti"].xcom_pull(task_ids="p3m_gu_read_table", key='return_value')
 
     with engine.connect() as db_conn:
         to_sql_kwargs = dict(

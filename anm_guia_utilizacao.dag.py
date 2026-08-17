@@ -79,11 +79,13 @@ check_sum = PythonOperator(
     op_kwargs={'dir':d_folder},
     dag=gu_dag
 )
+
 read_table = PythonOperator(
     task_id='p3m_gu_read_table',
     python_callable=convert_table_gu,
     op_kwargs={'temp_folder':d_folder, 'nome': 'guia_utilizacao'},
-    dag=gu_dag)
+    dag=gu_dag
+)
 
 #Operator específico que faz a seleção da branch a ser seguida na execução a condição de retorno da task anterior
 branching = BranchPythonOperator(
@@ -91,10 +93,11 @@ branching = BranchPythonOperator(
     python_callable=make_branch,
     dag=gu_dag
 )
-#Task's baseadas em operadores vazios que tem como objetivo único inicializar a branch indicada pela operador de branch da task anterior
-branch_a= EmptyOperator(task_id='p3m_gu_branch_a')
 
-branch_b= EmptyOperator(task_id='p3m_gu_branch_b')
+#Task's baseadas em operadores vazios que tem como objetivo único inicializar a branch indicada pela operador de branch da task anterior
+branch_a = EmptyOperator(task_id='p3m_gu_branch_a')
+
+branch_b = EmptyOperator(task_id='p3m_gu_branch_b')
 
 #Task que cria o link simbólico de redirecionamento de diretorio de backup em caso de tentativas de execução quando não houve atualização da base
 criar_link = PythonOperator(
@@ -106,16 +109,15 @@ criar_link = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_gu_gravar',
     python_callable = gravar_csv_banco,
-    op_args=[bd_conn, "anm", "tb_guiautilizacao", "gu_read_table", 'objectid'],
-    dag=gu_dag)
-
+    op_args=[bd_conn],
+    dag=gu_dag
+)
 
 atualizar_mvw = SQLExecuteQueryOperator(
     task_id='p3m_gu_atualizar_matview',
     sql="sql/atualizar_mvw_guia_utilizacao.sql",
     **pg_kwargs
 )
-
 
 consumo_dados >> read_table >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
 
