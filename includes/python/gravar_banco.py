@@ -15,6 +15,25 @@ from osgeo import gdal
 task_logger = logging.getLogger("airflow.task")
 
 
+#def gdal_error_handler(err_class, err_no, err_msg):
+#    err_msg = err_msg.strip()
+#        
+#    # Mapeamento de classes de erro do GDAL para o logging do Python
+#    if err_class == gdal.CE_Debug:
+#        logging.debug(f"GDAL Debug [{err_no}]: {err_msg}")
+#    elif err_class == gdal.CE_None:
+#        logging.info(f"GDAL Info [{err_no}]: {err_msg}")
+#    elif err_class == gdal.CE_Warning:
+#        logging.warning(f"GDAL Warning [{err_no}]: {err_msg}")
+#    elif err_class in (gdal.CE_Failure, gdal.CE_Fatal):
+#        logging.error(f"GDAL Error [{err_no}]: {err_msg}")
+#    else:
+#        pass
+
+#gdal.PushErrorHandler(gdal_error_handler)    
+#gdal.UseExceptions()
+
+
 class OGRPostgresHook(PostgresHook):
     def get_ogr_datasource_str(self, schema=None) -> str:
         conn = self.get_connection(self.postgres_conn_id)
@@ -40,27 +59,6 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         "FC_ProcessoTotal"
     ]
 
-    gdal.UseExceptions()
-
-    def gdal_error_handler(err_class, err_no, err_msg):
-        # Remover quebras de linha duplicadas da mensagem
-        err_msg = err_msg.strip()
-        
-        # Mapeamento de classes de erro do GDAL para o logging do Python
-        if err_class == gdal.CE_Debug:
-            logging.debug(f"GDAL Debug [{err_no}]: {err_msg}")
-        elif err_class == gdal.CE_None:
-            logging.info(f"GDAL Info [{err_no}]: {err_msg}")
-        elif err_class == gdal.CE_Warning:
-            logging.warning(f"GDAL Warning [{err_no}]: {err_msg}")
-        elif err_class in (gdal.CE_Failure, gdal.CE_Fatal):
-            logging.error(f"GDAL Error [{err_no}]: {err_msg}")
-        else:
-            pass
-
-    # 2. Registra o handler globalmente (faça isso no escopo do seu DAG ou na task)
-    gdal.SetErrorHandler(gdal_error_handler)
-
     GDAL_CONFIG_OPTIONS = [
         ("CPL_DEBUG", "ON"), 
         ("OGR_TRUNCATE", "YES"), 
@@ -83,14 +81,12 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         #preserveFID=True,
     )
 
-    # /tmp/p3m/minas-ativas/2026/08/11/DBANM.gdb
-
     gdal.VectorTranslate(
         out_postgis,   # dst (postgresql)
         in_gdb,        # src (FileGDB)
         options=options
     )
-
+    
 
 def gravar_csv_banco(bd_conn, schema, table, task_name, pk_name, **kwargs):
     task_logger.info(f'conexão com o banco: {bd_conn}')
