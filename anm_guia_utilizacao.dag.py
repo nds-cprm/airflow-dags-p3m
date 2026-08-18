@@ -109,7 +109,7 @@ criar_link = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'p3m_gu_gravar',
     python_callable = gravar_csv_banco,
-    op_args=[bd_conn],
+    op_args=[bd_conn, "anm", "tb_guiautilizacao", "p3m_gu_read_table", "objectid"],
     dag=gu_dag
 )
 
