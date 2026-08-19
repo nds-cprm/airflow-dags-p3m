@@ -106,7 +106,7 @@ read_table = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'cfem_gravar_dados',
     python_callable = gravar_csv_banco,
-    op_args=[bd_conn, "geoserver", "cfem_arrecadacao_ativa", "cfem_read_table", 'id'],
+    op_args=[bd_conn, "anm", "cfem_arrecadacao_ativa", "cfem_read_table", 'id'],
     dag=cfem_dag)
 
 
