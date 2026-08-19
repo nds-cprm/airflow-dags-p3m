@@ -174,3 +174,5 @@ docker-compose.yaml
 .history/
 
 .airflowignore
+
+dockerfile_bledge
