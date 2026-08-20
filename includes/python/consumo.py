@@ -21,6 +21,13 @@ from p3m.includes.python.utils import get_bronze_folder
 #direcionamento do log
 task_logger = logging.getLogger("airflow.task")
 
+
+def to_double(df, column):
+    df[column]=  pd.to_numeric(df[column].str
+    .replace(',','.', regex = False), errors = 'raise').astype('float64')
+
+    return df
+
 # Função para donwload do arquivo base .gdb
 def consumir_dado(url, temp_dir, out_file, **kwargs):
     task_logger.info('DAG iniciada')
@@ -116,13 +123,21 @@ def ingest_to_gdb(sources: dict, temp_dir: str, out_file: str, **kwargs) -> str:
                         df = df[['AREA_HA', 'DSProcesso', 'geometry']].copy()
                         df = df.rename(columns={'AREA_HA': 'QTAreaHA'})
                         df.geometry = shapely.force_2d(df.geometry) 
-
                         layer_name = f"FC_ProcessoTotal"
 
                     else:
                         with zipfile.ZipFile(local_zip) as z:
                             with z.open(f"{folder}/{file}") as f:
                                 df = pd.read_csv(f, encoding="latin-1", sep=";")
+                                
+                                if 'QTAreaHA' in df.columns:
+                                    task_logger.info(f'Camada {file} possui qtareaha, convertendo para double')
+                                    try:
+                                        df = to_double(df, 'QTAreaHA')
+                                    except Exception as e:
+                                        task_logger.info(f'Error occurred when trying to convert qt area (str to double): \n Class: {e.__class__.__name__},\n Cause {e.__cause__}, \n Error {e} ')
+
+
                         layer_name = f"TB_{file.split('.')[0]}"
 
                     pyogrio.write_dataframe(

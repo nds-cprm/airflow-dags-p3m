@@ -15,23 +15,23 @@ from osgeo import gdal
 task_logger = logging.getLogger("airflow.task")
 
 
-#def gdal_error_handler(err_class, err_no, err_msg):
-#    err_msg = err_msg.strip()
-#        
-#    # Mapeamento de classes de erro do GDAL para o logging do Python
-#    if err_class == gdal.CE_Debug:
-#        logging.debug(f"GDAL Debug [{err_no}]: {err_msg}")
-#    elif err_class == gdal.CE_None:
-#        logging.info(f"GDAL Info [{err_no}]: {err_msg}")
-#    elif err_class == gdal.CE_Warning:
-#        logging.warning(f"GDAL Warning [{err_no}]: {err_msg}")
-#    elif err_class in (gdal.CE_Failure, gdal.CE_Fatal):
-#        logging.error(f"GDAL Error [{err_no}]: {err_msg}")
-#    else:
-#        pass
+def gdal_error_handler(err_class, err_no, err_msg):
+   err_msg = err_msg.strip()
+       
+   # Mapeamento de classes de erro do GDAL para o logging do Python
+   if err_class == gdal.CE_Debug:
+       logging.debug(f"GDAL Debug [{err_no}]: {err_msg}")
+   elif err_class == gdal.CE_None:
+       logging.info(f"GDAL Info [{err_no}]: {err_msg}")
+   elif err_class == gdal.CE_Warning:
+       logging.warning(f"GDAL Warning [{err_no}]: {err_msg}")
+   elif err_class in (gdal.CE_Failure, gdal.CE_Fatal):
+       logging.error(f"GDAL Error [{err_no}]: {err_msg}")
+   else:
+       pass
 
-#gdal.PushErrorHandler(gdal_error_handler)    
-#gdal.UseExceptions()
+gdal.PushErrorHandler(gdal_error_handler)    
+gdal.UseExceptions()
 
 
 class OGRPostgresHook(PostgresHook):
@@ -87,7 +87,6 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         options=options
     )
     
-
 def gravar_csv_banco(bd_conn, schema, table, task_name, pk_name, **kwargs):
     task_logger.info(f'conexão com o banco: {bd_conn}')
     hook = PostgresHook(postgres_conn_id=bd_conn)    

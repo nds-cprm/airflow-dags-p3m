@@ -29,11 +29,6 @@ def fix_and_parse_datetime(df, column_name):
     #return pd.DataFrame(adjusted_values)
     return pd.Series(pd.to_datetime(val_correto, unit="ms"), index=df.index)
 
-def to_double(df, column):
-    df[column]=  pd.to_numeric(df[column].str
-    .replace(',','.', regex = False), errors = 'raise').astype('float64')
-
-    return df
 
 def sanitize_dataset(
         cols_to_rename:dict = {}, 
@@ -72,12 +67,6 @@ def sanitize_dataset(
             .set_index("fid")
             .sort_index() 
     )
-
-    if 'qtareaha' in df.columns:
-        try:
-            df = to_double(df, 'qtareaha')
-        except Exception as e:
-            task_logger.info(f'Error occurred when trying to convert qt area (str to double): \n Class: {e.__class__.__name__},\n Cause {e.__cause__}, \n Error {e} ')
 
 
     

@@ -237,7 +237,8 @@
         "col_renames": {},
         "out_db": {
             "schema": "cprm",
-            "table": "cprm_map_geo_1m"
+            "table": "cprm_map_geo_1m",
+            "ptm": "True"
         },
         "geoserver": {
             "workspace": "p3m",
