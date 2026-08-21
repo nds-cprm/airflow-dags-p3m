@@ -2,6 +2,7 @@
 import subprocess
 import re
 import logging
+import sys
 import pandas as pd
 import psycopg2
 from sqlalchemy import text, create_engine
@@ -56,7 +57,9 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         "TB_ProcessoMunicipio",
         "TB_Pessoa",
         "TB_ProcessoSubstancia",
+        "TB_ProcessoAssociacao",
         "FC_ProcessoTotal"
+
     ]
 
     GDAL_CONFIG_OPTIONS = [
@@ -86,6 +89,7 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         in_gdb,        # src (FileGDB)
         options=options
     )
+
     
 def gravar_csv_banco(bd_conn, schema, table, task_name, pk_name, **kwargs):
     task_logger.info(f'conexão com o banco: {bd_conn}')

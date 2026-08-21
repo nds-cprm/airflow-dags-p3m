@@ -78,7 +78,7 @@ def convert_table(**kwargs):
 
     out_parquet = temp_folder.joinpath("cfem_tratada.parquet")
 
-    data.to_parquet(out_parquet, engine="fastparquet")
+    data.to_parquet(out_parquet, engine="pyarrow")
 
     return out_parquet.as_posix()
 
@@ -97,6 +97,6 @@ def convert_table_gu(**kwargs):
     
     out_parquet = temp_folder.joinpath(f"{kwargs['nome']}.parquet")
 
-    data.to_parquet(out_parquet, engine="fastparquet")
+    data.to_parquet(out_parquet, engine="pyarrow")
 
     return out_parquet.as_posix()

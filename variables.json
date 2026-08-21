@@ -20,7 +20,8 @@
                 "ProcessoEvento.txt",
                 "ProcessoMunicipio.txt",
                 "Pessoa.txt",
-                "ProcessoSubstancia.txt"
+                "ProcessoSubstancia.txt",
+                "ProcessoAssociacao.txt"
             ]
         }
     },

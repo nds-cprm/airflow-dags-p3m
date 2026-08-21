@@ -19,6 +19,12 @@
 -- Rodar airflow 1x para consumir fonte e criar tabelas e script para criar indices e mviews
 
 
+---------------------------v3 - 21/08/2026
+
+-- hot fix para estrutura/modelagem processos minerarios ativos agrupados (mvw_pma_agrupado)
+
+
+
 ---------------------DROPS
 drop table if exists cprm.cprm_geocron cascade ;
 DROP TABLE if exists cprm.cprm_lev_litostrat_100000 cascade;
@@ -414,3 +420,157 @@ CREATE INDEX idx_cprm_cartas_anomalia ON cprm.cprm_cartas_anomalia USING btree (
 -- View Cartas de Anomalia
 CREATE OR REPLACE VIEW geoserver.vw_cprm_cartas_anomalia
 AS SELECT * FROM cprm.cprm_cartas_anomalia;
+
+
+------------------------------------------------------------------ HOT FIX PMA AGRUPADO --------------------- 21/08/26 -V3
+
+drop materialized view geoserver.mvw_minas_ativas_grp;
+DROP MATERIALIZED VIEW geoserver.mvw_grupos_minerarios;
+drop materialized view geoserver.mvw_pma_agrupado;
+
+----------- PMA AGRUPADO NOVO: DEPENDE DA NOVA TABLE anm.tb_processoassociacao -> atualizada pelo airflow // contagem de 2530 -> 2565
+
+CREATE MATERIALIZED VIEW geoserver.mvw_pma_agrupado
+TABLESPACE pg_default
+AS SELECT DISTINCT mpma.id,
+    mpma.geom,
+    mpma.ds_processo,
+    mpma.qt_area,
+    mpma.nm_pessoa,
+    mpma.nm_substancia,
+    mpma.tipo_uso,
+    mpma.nm_mun,
+    mpma.cod_mun,
+    mpma.sigla_uf,
+    mpma.regiao_estado,
+    mpma.substancia_agrupadora_id,
+    mpma.ds_fase_processo,
+    mpma.ds_fase_agrupada,
+    ac_assoc.processo_minerario AS processo_grupo_minerario,
+    ac_assoc.dsprocessoassociado AS proc_associado,
+    COALESCE(ac_assoc.processo_minerario, mpma.ds_processo::text) AS processo_final
+   FROM geoserver.mvw_processos_minerarios_ativos mpma
+     LEFT JOIN ( SELECT ac.dsprocessoassociado,
+            ac.dsprocesso AS processo_minerario
+           FROM anm.tb_processoassociacao ac
+          WHERE ac.idtipoassociacao = 4) ac_assoc ON mpma.ds_processo::text = ac_assoc.dsprocessoassociado
+WITH DATA;
+
+------- MINAS ATIVAS
+
+
+CREATE MATERIALIZED VIEW geoserver.mvw_minas_ativas_grp
+TABLESPACE pg_default
+AS SELECT mpma.id,
+    mpma.geom,
+    mpma.ds_processo,
+    mpma.processo_final AS ds_processo_grp_min,
+    mpma.qt_area,
+    mpma.nm_pessoa,
+    mpma.nm_mun,
+    mpma.cod_mun,
+    mpma.sigla_uf,
+    mpma.regiao_estado,
+    mpma.tipo_uso,
+    caa.substancia AS nm_substancia,
+    psm.substanciaagrupadora_id::character varying(5) AS substancia_agrupadora_id,
+    mpma.ds_fase_processo,
+    mpma.ds_fase_agrupada,
+    sum(caa.vl_recolhido) AS total_recolhido,
+    sum(caa.qt_comercializada) AS total_produzido
+   FROM anm.cfem_arrecadacao_ativa caa
+     JOIN geoserver.mvw_pma_agrupado mpma ON replace(mpma.processo_final, '.'::text, ''::text) = caa.processo_ano
+     JOIN p3m_substanciamineral psm ON psm.nome::text = caa.substancia
+  WHERE caa.data_recolhimento_cfem >= (CURRENT_DATE - '1 year'::interval)
+  GROUP BY mpma.id, mpma.geom, mpma.ds_processo, mpma.processo_final, mpma.qt_area, mpma.nm_pessoa, mpma.tipo_uso, mpma.nm_mun, mpma.cod_mun, mpma.sigla_uf, mpma.regiao_estado, caa.substancia, psm.substanciaagrupadora_id, mpma.ds_fase_processo, mpma.ds_fase_agrupada
+WITH DATA;
+
+-- View indexes:
+CREATE INDEX mma_ds_idx_grp ON geoserver.mvw_minas_ativas_grp USING btree (ds_processo);
+CREATE INDEX mma_geom_idx_grp ON geoserver.mvw_minas_ativas_grp USING gist (geom);
+CREATE INDEX mma_id_agrp_idx_grp ON geoserver.mvw_minas_ativas_grp USING btree (substancia_agrupadora_id);
+
+
+------- GRUPOS MINERARIOS
+
+CREATE MATERIALIZED VIEW geoserver.mvw_grupos_minerarios
+TABLESPACE pg_default
+AS SELECT DISTINCT row_number() OVER () AS id,
+    st_multi(mpma.geom)::geometry(MultiPolygon,4674) AS geom,
+    mpma.processo_final AS ds_processo,
+    mpma.qt_area,
+    mpma.nm_pessoa,
+    mpma.nm_mun,
+    mpma.cod_mun,
+    mpma.sigla_uf,
+    mpma.regiao_estado,
+    mpma.tipo_uso,
+    caa.substancia::character varying(50) AS nm_substancia,
+    psm.substanciaagrupadora_id::character varying(5) AS substancia_agrupadora_id,
+    mpma.ds_fase_processo,
+    mpma.ds_fase_agrupada,
+    sum(caa.vl_recolhido) AS total_recolhido,
+    sum(caa.qt_comercializada) AS total_produzido
+   FROM anm.cfem_arrecadacao_ativa caa
+     JOIN ( SELECT mvw_pma_agrupado.id,
+            mvw_pma_agrupado.geom,
+            mvw_pma_agrupado.ds_processo,
+            mvw_pma_agrupado.qt_area,
+            mvw_pma_agrupado.nm_pessoa,
+            mvw_pma_agrupado.nm_substancia,
+            mvw_pma_agrupado.tipo_uso,
+            mvw_pma_agrupado.nm_mun,
+            mvw_pma_agrupado.cod_mun,
+            mvw_pma_agrupado.sigla_uf,
+            mvw_pma_agrupado.regiao_estado,
+            mvw_pma_agrupado.substancia_agrupadora_id,
+            mvw_pma_agrupado.ds_fase_processo,
+            mvw_pma_agrupado.ds_fase_agrupada,
+            mvw_pma_agrupado.processo_grupo_minerario,
+            mvw_pma_agrupado.proc_associado,
+            mvw_pma_agrupado.processo_final
+           FROM geoserver.mvw_pma_agrupado
+          WHERE mvw_pma_agrupado.processo_grupo_minerario IS NOT NULL) mpma ON replace(mpma.processo_final, '.'::text, ''::text) = caa.processo_ano
+     JOIN p3m_substanciamineral psm ON psm.nome::text = caa.substancia
+  WHERE caa.data_recolhimento_cfem >= (CURRENT_DATE - '1 year'::interval)
+  GROUP BY mpma.id, mpma.geom, mpma.processo_final, mpma.qt_area, mpma.nm_pessoa, mpma.tipo_uso, mpma.nm_mun, mpma.cod_mun, mpma.sigla_uf, mpma.regiao_estado, caa.substancia, psm.substanciaagrupadora_id, mpma.ds_fase_processo, mpma.ds_fase_agrupada
+WITH DATA;
+
+-- View indexes:
+CREATE INDEX mma_ds_gp_mn1 ON geoserver.mvw_grupos_minerarios USING btree (ds_processo);
+CREATE INDEX mma_geom_idx_gp_mn1 ON geoserver.mvw_grupos_minerarios USING gist (geom);
+CREATE INDEX mma_id_agrp_idx_gp_mn1 ON geoserver.mvw_grupos_minerarios USING btree (substancia_agrupadora_id);
+
+
+--- DDL ANTIGA PMA AGRUPADO ----------> NÃO RODAR
+
+
+-- geoserver.mvw_pma_agrupado source
+
+CREATE MATERIALIZED VIEW geoserver.mvw_pma_agrupado
+TABLESPACE pg_default
+AS SELECT DISTINCT mpma.id,
+    mpma.geom,
+    mpma.ds_processo,
+    mpma.qt_area,
+    mpma.nm_pessoa,
+    mpma.nm_substancia,
+    mpma.tipo_uso,
+    mpma.nm_mun,
+    mpma.cod_mun,
+    mpma.sigla_uf,
+    mpma.regiao_estado,
+    mpma.substancia_agrupadora_id,
+    mpma.ds_fase_processo,
+    mpma.ds_fase_agrupada,
+    ac_assoc.processo_minerario AS processo_grupo_minerario,
+    ac_assoc.ds_processo_associado AS proc_associado,
+    COALESCE(ac_assoc.processo_minerario, mpma.ds_processo::text) AS processo_final
+   FROM geoserver.mvw_processos_minerarios_ativos mpma
+     LEFT JOIN ( SELECT ac.ds_processo_associado,
+            ac.ds_processo AS processo_minerario
+           FROM p3m_associacoes ac
+          WHERE ac.id_tipo_associacao = 4) ac_assoc ON mpma.ds_processo::text = ac_assoc.ds_processo_associado
+WITH DATA;
+
+---------------------------------------
