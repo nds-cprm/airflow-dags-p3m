@@ -253,6 +253,13 @@ trigger_cfem = TriggerDagRunOperator(
 trigger_guia_utilizacao = TriggerDagRunOperator(
     task_id= 'trigger_guia_utilizacao', 
     trigger_dag_id = 'p3m_guia_utilizacao',
+    wait_for_completion = True,
+    dag = etl_dag
+)
+
+trigger_cache = TriggerDagRunOperator(
+    task_id= 'trigger_cache', 
+    trigger_dag_id = 'cache_camadas_principais',
     wait_for_completion = False,
     dag = etl_dag
 )
@@ -285,7 +292,8 @@ trigger_cfem >> atualizar_mvwgrupos_minerarios
 (
     [atualizar_mvwminasativas, atualizar_mvwativos_sgb, atualizar_mvwgrupos_minerarios] >>
     atl_cards >> 
-    trigger_guia_utilizacao # type: ignore
+    trigger_guia_utilizacao>> 
+    trigger_cache # type: ignore
 )
 
 
