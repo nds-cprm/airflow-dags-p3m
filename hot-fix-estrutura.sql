@@ -21,7 +21,7 @@
 
 ---------------------------v3 - 21/08/2026
 
--- hot fix para estrutura/modelagem processos minerarios ativos agrupados (mvw_pma_agrupado)
+-- hot fix para estrutura/modelagem processos minerarios ativos agrupados (mvw_pma_agrupado) // envolve criação da nova table a ser atualizada pelo airflow
 
 
 
@@ -423,6 +423,23 @@ AS SELECT * FROM cprm.cprm_cartas_anomalia;
 
 
 ------------------------------------------------------------------ HOT FIX PMA AGRUPADO --------------------- 21/08/26 -V3
+
+
+
+-- DROP TABLE anm.tb_processoassociacao;
+
+CREATE TABLE anm.tb_processoassociacao (
+	ogc_fid serial4 NOT NULL,
+	dsprocesso varchar NULL,
+	dsprocessoassociado varchar NULL,
+	idtipoassociacao int8 NULL,
+	dtassociacao varchar NULL,
+	dtdesassociacao varchar NULL,
+	obassociacao varchar NULL,
+	CONSTRAINT tb_processoassociacao_pkey PRIMARY KEY (ogc_fid)
+);
+
+
 
 drop materialized view geoserver.mvw_minas_ativas_grp;
 DROP MATERIALIZED VIEW geoserver.mvw_grupos_minerarios;
