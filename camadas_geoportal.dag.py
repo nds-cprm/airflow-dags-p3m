@@ -97,19 +97,23 @@ def dag_factory(dag_params:dict) -> DAG:
         #     python_callable=simbolic_link,
         #     dag=leg_dag
         # )
+
         gravar_dados = PythonOperator(
             task_id='%s_load' % _name,
             python_callable=gravar_banco,
             op_kwargs=dag_params.pop("out_db"),
         )
 
-        att_cache= PythonOperator(
-            task_id='%s_reseed_cache' % _name,
-            python_callable=reseed,
-            op_kwargs=dag_params.pop("geoserver"),
-        )
+        for layers in dag_params.pop("geoserver"):
+            att_cache= PythonOperator(
+                task_id='%s_%s_reseed' % (_name, layers["layer"]),
+                python_callable=reseed,
+                op_kwargs=layers,
+            )
 
-        consumo_dados >> sanitizar >> gravar_dados >> att_cache
+            gravar_dados >> att_cache
+
+        consumo_dados >> sanitizar >> gravar_dados
 
     return dag
 

@@ -13,10 +13,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_25000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_25000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_25000"
+            }
+        ]
     },
     {
         "name": "litoestratigrafia_50000",
@@ -32,10 +34,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_50000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_50000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_50000"
+            }
+        ]
     },
     {
         "name": "litoestratigrafia_100000",
@@ -51,10 +55,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_100000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_100000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_100000"
+            }
+        ]
     },
     {
         "name": "litoestratigrafia_250000",
@@ -70,10 +76,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_250000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_250000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_250000"
+            }
+        ]
     },
     {
         "name": "litoestratigrafia_1000000",
@@ -89,10 +97,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_1000000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_1000000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_1000000"
+            }
+        ]
     },
     {
         "name": "afloramentos",
@@ -112,10 +122,12 @@
             "schema": "cprm",
             "table": "cprm_aflor_geo"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_aflor_geo"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_aflor_geo"
+            }
+        ]
     },
     {
         "name": "geocronologia",
@@ -132,10 +144,12 @@
             "schema": "cprm",
             "table": "cprm_geocron"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_geocron"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_geocron"
+            }
+        ]
     },
     {
         "name": "ocorrencias_minerais",
@@ -148,10 +162,12 @@
             "schema": "cprm",
             "table": "cprm_ocorr_min"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_ocorr_min"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_ocorr_min"
+            }
+        ]
     },
     {
         "name": "petrografia",
@@ -163,10 +179,12 @@
             "schema": "cprm",
             "table": "cprm_petrogf"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_petrogf"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_petrogf"
+            }
+        ]
     },
     {
         "name": "mapeamento_geologico_25000",
@@ -179,10 +197,12 @@
             "table": "cprm_map_geo_25k",
             "ptm": "True"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_map_geo_25k"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_map_geo_25k"
+            }
+        ]
     },
     {
         "name": "mapeamento_geologico_50000",
@@ -195,10 +215,12 @@
             "table": "cprm_map_geo_50k",
             "ptm": "True"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_map_geo_50k"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_map_geo_50k"
+            }
+        ]
     },
     {
         "name": "mapeamento_geologico_100000",
@@ -210,10 +232,12 @@
             "schema": "cprm",
             "table": "cprm_map_geo_100k"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_map_geo_100k"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_map_geo_100k"
+            }
+        ]
     },
     {
         "name": "mapeamento_geologico_250000",
@@ -225,10 +249,12 @@
             "schema": "cprm",
             "table": "cprm_map_geo_250k"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_map_geo_250k"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_map_geo_250k"
+            }
+        ]
     },
     {
         "name": "mapeamento_geologico_1000000",
@@ -241,10 +267,12 @@
             "table": "cprm_map_geo_1m",
             "ptm": "True"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_map_geo_1m"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_map_geo_1m"
+            }
+        ]
     },
     {
         "name": "cartas_anomalia",
@@ -256,10 +284,12 @@
             "schema": "cprm",
             "table": "cprm_cartas_anomalia"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_cartas_anomalia"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_cartas_anomalia"
+            }
+        ]
     },
     {
         "name": "furos_sondagem",
@@ -271,10 +301,13 @@
             "schema": "cprm",
             "table": "cprm_furos_sondagem"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_furos_sondagem"
-        }
+        "geoserver": 
+        [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_furos_sondagem"
+            }
+        ]
     },
     {
         "name": "litoestratigrafia_2500000",
@@ -292,10 +325,12 @@
             "schema": "cprm",
             "table": "cprm_lev_litostrat_2500000"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_lev_litostrat_2500000"
-        }
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_litostrat_2500000"
+            }
+        ]
     },
     {
         "name": "modelamento_3d",
@@ -307,9 +342,41 @@
             "schema": "cprm",
             "table": "cprm_modelamento_3d"
         },
-        "geoserver": {
-            "workspace": "p3m",
-            "layer": "vw_cprm_modelamento_3d"
-        }
+        "geoserver": 
+        [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_modelamento_3d"
+            }
+        ]
+    },
+    {
+        "name": "levantamentos_areogeofisicos",
+        "source": "https://geoportal.sgb.gov.br/server/rest/services/geofisica/aerogeofisica/MapServer/0/query",
+        "step": 1000,
+        "retries": 3,
+        "col_renames": {},
+        "out_db": {
+            "schema": "cprm",
+            "table": "cprm_lev_aerogf"
+        },
+        "geoserver": [
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_aerogf_1"
+            },
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_aerogf_2"
+            },
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_aerogf_3"
+            },
+            {
+                "workspace": "p3m",
+                "layer": "vw_cprm_lev_aerogf_4"
+            }
+        ]
     }
 ]
