@@ -291,9 +291,10 @@ trigger_cfem >> atualizar_mvwgrupos_minerarios
 
 (
     [atualizar_mvwminasativas, atualizar_mvwativos_sgb, atualizar_mvwgrupos_minerarios] >>
-    atl_cards >> 
+    
     trigger_guia_utilizacao>> 
-    trigger_cache # type: ignore
+    trigger_cache >>
+    atl_cards  # type: ignore
 )
 
 
