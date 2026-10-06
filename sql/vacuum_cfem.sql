@@ -2,6 +2,6 @@
 --executada após atualização
 --comando vacuum não pode ser utilizado em bloco
 -- TODO: Trocar o schema geoserver para anm, depois de resolver no Django
-vacuum (verbose,analyze) geoserver.cfem_arrecadacao_ativa;
+vacuum (verbose,analyze) anm.cfem_arrecadacao_ativa;
 
     

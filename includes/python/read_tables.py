@@ -1,4 +1,5 @@
 import pandas as pd
+import logging
 import sqlalchemy
 
 from datetime import datetime
@@ -6,6 +7,11 @@ from dateutil.relativedelta import relativedelta
 from humps import decamelize
 from slugify import slugify
 from pathlib import Path
+
+from airflow.models import Variable
+
+logger = logging.getLogger("airflow.task")
+
 
 cast_dict = {
     'Ano': sqlalchemy.types.INTEGER() ,
@@ -17,6 +23,13 @@ cast_dict = {
     'Município':sqlalchemy.types.VARCHAR(50),
     'UnidadeDeMedida':sqlalchemy.types.VARCHAR(5),
 }
+
+
+def _get_parquet_engine():
+    driver = Variable.get("GEOSGB_PARQUET_DRIVER", "pyarrow")
+    logger.info("Usando driver parquet: [%s]" % driver)
+    return driver
+
 
 def convert_table(**kwargs):    
     hd_list = kwargs['hd_list']
@@ -77,7 +90,25 @@ def convert_table(**kwargs):
     )
 
     out_parquet = temp_folder.joinpath("cfem_tratada.parquet")
+    data.to_parquet(out_parquet, engine=_get_parquet_engine())
 
-    data.to_parquet(out_parquet)
+    return out_parquet.as_posix()
+
+
+def convert_table_gu(**kwargs):
+
+    temp_folder = Path(kwargs['temp_folder'])
+
+    csv_file = Path(kwargs["ti"].xcom_pull(key='a_path'))
+
+    data = (
+        pd.read_csv(csv_file, encoding = 'latin-1').rename(
+            columns=lambda col: col.lower())
+        )
+    data['guia'] = data['guia'].fillna(0).astype(int)
+    data['datapublicacao'] = pd.to_datetime(data['datapublicacao'], format="%Y-%m-%d", errors='coerce')
+    
+    out_parquet = temp_folder.joinpath(f"{kwargs['nome']}.parquet")
+    data.to_parquet(out_parquet, engine=_get_parquet_engine())
 
     return out_parquet.as_posix()

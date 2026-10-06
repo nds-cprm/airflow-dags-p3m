@@ -7,10 +7,12 @@ Data: Junho/2023
 Descrição: Projeto de engenharia de dados com foco em dados geográficos desenvolido com base em plataforma OpenSource Apache Airflow.
 Estrutura-se em uma ETL com consumo, tratamento dos dados e carregamento em de forma dinâmica no Banco de dados. 
 Estruturado em pyhton, com recursos de SQL, Bash/Shell e bibliotecas geospaciais como Gdal/Ogr.
-"""
 
+
+"""
 from datetime import datetime
 #Operadores padrão
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 
@@ -52,15 +54,15 @@ out_file = Variable.get('out_file')
 
 #Definição da DAG
 etl_dag = DAG(
-    'p3m_processos_minerarios', 
+    'p3m_minas_ativas', 
     default_args = {
         "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
         "email_on_failure": False
     },
     start_date = datetime(2023, 8, 9),
-    schedule_interval = "0 2 * * 2,4,6",
-    tags=["p3m"],
-    catchup = False
+    schedule_interval = None, #"0 2 * * 2,4,6",
+    catchup = False,
+    tags=["p3m"]
 )
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
@@ -118,6 +120,25 @@ criar_link = PythonOperator(
 #     dag=etl_dag
 # )
 
+# gravar_dados = BashOperator(
+#     task_id='p3m_etl_gravar_dados',
+#     bash_command="""
+#     ogr2ogr -append \
+#       -f "PostgreSQL" \
+#       "PG:host={{ conn.p3m_homolog.host }} dbname={{ conn.p3m_homolog.schema }} active_schema=anm \
+#           user={{ conn.p3m_homolog.login }} password={{ conn.p3m_homolog.password }} port={{ conn.p3m_homolog.port }}" \
+#       "{{ ti.xcom_pull(key='a_path') }}" \
+#       "FC_ProcessoTotal" \
+#       -lco LAUNDER=NO \
+#       -lco OVERWRITE=NO \
+#       -forceNullable \
+#       -preserve_fid \
+#       --config PG_USE_COPY YES \
+#       --config CPL_DEBUG ON \
+#       --config OGR_TRUNCATE YES 
+#     """
+# )
+
 # Task para salvar os dados no banco de dados
 gravar_dados = PythonOperator(
     task_id = 'p3m_etl_gravar_dados',
@@ -126,10 +147,10 @@ gravar_dados = PythonOperator(
     dag=etl_dag)
 
 #Task responsável por construir a tabela de apoio com a junção de todas as FC's
-montar_tabela= SQLExecuteQueryOperator(
-    task_id='p3m_etl_montar_tabela',
-    sql="sql/montar_tabela.sql",
-    **pg_kwargs)
+# montar_tabela= SQLExecuteQueryOperator(
+#     task_id='p3m_etl_montar_tabela',
+#     sql="sql/montar_tabela.sql",
+#     **pg_kwargs)
 
 #Task em python operator responsáveis por criar o log listando os processos com problemas para cada uma das situações de tratamento
 inativos_log =PythonOperator(
@@ -195,6 +216,25 @@ atualizar_mvwpma=SQLExecuteQueryOperator(
     sql="sql/atualizar_mvwpma.sql",
     **pg_kwargs)
 
+atualizar_mvw_pma_agrupado= SQLExecuteQueryOperator(
+    task_id='p3m_etl_pma_agrupado',
+    sql="sql/atualizar_pma_agrupado.sql",
+    **pg_kwargs)
+
+atualizar_mvwminasativas = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwminasativas',
+    sql="sql/atualizar_mvw_minas_atv.sql",
+    **pg_kwargs)
+
+atualizar_mvwgrupos_minerarios = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwgrupos_minerarios',
+    sql="sql/atualizar_mvw_grupos_minerarios.sql",
+    **pg_kwargs)
+
+atualizar_mvwativos_sgb = SQLExecuteQueryOperator(
+    task_id='p3m_etl_atualizar_mvwativos_sgb',
+    sql="sql/atualizar_mvw_ativos_sgb.sql",
+    **pg_kwargs)
 
 #Task para atualização da Data nos cards do dashboard
 atl_cards=SQLExecuteQueryOperator(
@@ -206,17 +246,58 @@ atl_cards=SQLExecuteQueryOperator(
 trigger_cfem = TriggerDagRunOperator(
     task_id= 'trigger_cfem', 
     trigger_dag_id = 'p3m_cfem',
-    wait_for_completion = False,
+    wait_for_completion = True,
     dag = etl_dag
-
 )
 
-#Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
+trigger_guia_utilizacao = TriggerDagRunOperator(
+    task_id= 'trigger_guia_utilizacao', 
+    trigger_dag_id = 'p3m_guia_utilizacao',
+    wait_for_completion = True,
+    dag = etl_dag
+)
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b]#type:ignore
+trigger_cache = TriggerDagRunOperator(
+    task_id= 'trigger_cache', 
+    trigger_dag_id = 'cache_camadas_principais',
+    wait_for_completion = False,
+    dag = etl_dag
+)
 
-# branch_a>>descompactar>>gravar_dados>>montar_tabela>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards # type: ignore
-branch_a>>gravar_dados>>[inativos_log,duplicados_log,geom_log]>>remover_inativos>>remover_duplicados>>corrigir_geom>>vacuum>>atualizar_index>>[atualizar_mvwcadastro,atualizar_mvwevt,atualizar_mvwpma]>>atl_cards>>trigger_cfem # type: ignore
 
-branch_b>>criar_link>>atl_cards#type:ignore
+# Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dadoss
+consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
 
+# Branch A
+(
+    branch_a >> 
+    gravar_dados >>
+    inativos_log >>
+    duplicados_log >> 
+    geom_log >> 
+    remover_inativos >> 
+    remover_duplicados >> 
+    corrigir_geom >> 
+    vacuum >> 
+    atualizar_index >> 
+    atualizar_mvwcadastro >> 
+    atualizar_mvwevt >> 
+    atualizar_mvwpma >> 
+    atualizar_mvw_pma_agrupado >> 
+    [atualizar_mvwminasativas, atualizar_mvwativos_sgb, trigger_cfem] 
+)
+
+trigger_cfem >> atualizar_mvwgrupos_minerarios
+
+(
+    [atualizar_mvwminasativas, atualizar_mvwativos_sgb, atualizar_mvwgrupos_minerarios] >>
+    
+    trigger_guia_utilizacao>> 
+    trigger_cache >>
+    atl_cards  # type: ignore
+)
+
+
+
+# Branch B
+branch_b >> criar_link >> atl_cards#type:ignore

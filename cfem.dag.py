@@ -10,7 +10,7 @@ try:
     from airflow.providers.postgres.operators.postgres import PostgresOperator as SQLExecuteQueryOperator
 except ImportError:
     from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow import DAG
 #caminho relativo dos módulos .py
 from p3m.includes.python.consumo import consumir_dado
@@ -46,9 +46,9 @@ cfem_dag = DAG (
         },
         start_date = datetime(2023, 5, 17),#Ajustar em produção
         schedule_interval = None, # '0 23 * * *',#Ajustar em produção
-        tags=["p3m"],
         catchup = False,
-    #     template_searchpath = Variable.get('template_searchpath')
+        # template_searchpath = Variable.get('template_searchpath'),
+        tags=["p3m"]
     )
 
 # Definição do operador SQLExecuteQueryOperator, para garantir funcionamento com o PostgresOperator com versão abaixo de 6.0.0.
@@ -106,7 +106,7 @@ read_table = PythonOperator(
 gravar_dados = PythonOperator(
     task_id = 'cfem_gravar_dados',
     python_callable = gravar_csv_banco,
-    op_args=[bd_conn],
+    op_args=[bd_conn, "anm", "cfem_arrecadacao_ativa", "cfem_read_table", 'id'],
     dag=cfem_dag)
 
 
@@ -129,10 +129,18 @@ atualizar_mvw_minas=SQLExecuteQueryOperator(
     dag=cfem_dag,
     **pg_kwargs)
 
+atualizar_uranio=SQLExecuteQueryOperator(
+    task_id='cfem_atualizar_uranio',
+    sql="sql/atualizar_uranio.sql",
+    dag=cfem_dag,
+    **pg_kwargs)
+
+
+
 #Hierarquia da pipeline com adição das branchs alternativas baseadas na condição de atualização da base de dados
 
-consumo_dados>>check_sum>>branching>>[branch_a,branch_b] #type:ignore
+consumo_dados >> check_sum >> branching >> [branch_a, branch_b] #type:ignore
 
-branch_a>>read_table>>gravar_dados>>vacuum>>atualizar_index>>atualizar_mvw_minas # type: ignore
+branch_a >> read_table >> gravar_dados >> vacuum >> atualizar_index >> atualizar_uranio >> atualizar_mvw_minas # type: ignore
 
-branch_b>>criar_link#type:ignore
+branch_b >> criar_link #type:ignores

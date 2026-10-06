@@ -4,9 +4,9 @@
 -- uma vez que deveria ser preenchido em caso de correspondecia com filtro de ativos
 --posteriormente são deletados aquele com valor nulo
 
-delete from anm."FC_ProcessoTotal" ft2 
-using (select ft."DSProcesso"
-		from anm."FC_ProcessoTotal" ft
-		left join anm."TB_Processo" tp on ft."DSProcesso"= tp."DSProcesso" and tp."BTAtivo" ='S'
-		where tp."IDTipoRequerimento" is null) as subquery
-where subquery."DSProcesso" = ft2."DSProcesso";
+delete from anm.fc_processototal ft2 
+using (select ft.dsprocesso
+		from anm.fc_processototal ft
+		left join anm.tb_processo tp on ft.dsprocesso= tp.dsprocesso and tp.btativo ='S'
+		where tp.idtiporequerimento is null) as subquery
+where subquery.dsprocesso = ft2.dsprocesso;

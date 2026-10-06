@@ -20,9 +20,38 @@
                 "ProcessoEvento.txt",
                 "ProcessoMunicipio.txt",
                 "Pessoa.txt",
-                "ProcessoSubstancia.txt"
+                "ProcessoSubstancia.txt",
+                "ProcessoAssociacao.txt"
             ]
         }
     },
-    "out_file": "DBANM.gdb"
+    "out_file": "DBANM.gdb",
+    "gu_data": "https://dadosabertos.anm.gov.br/SCM/Guia_de_Utilizacao_Autorizada.csv",
+    
+    "afloram_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/MapServer/0/query",
+    "afloram_nome": "cprm_aflor_geo",
+    "afloram_nums": {"":""},
+    "geocron_data":"https://geoportal.sgb.gov.br/server/rest/services/geologia/geocronologia/MapServer/0/query",
+    "geocron_nome": "cprm_geocron",
+    "geocron_nums": {"":""},
+    "leg_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_XXX000/MapServer/0/query",
+    "leg_nome": "cprm_lev_litostrat",
+    "leg_nums": {"25":"_25000", "50":"_50000","100":"_100000","250":"_250000", "1000":"_1000000"},
+    "map_geo_data": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/XXX/query",
+    "map_geo_nome": "cprm_map_geo",
+    "map_geo_nums": {"5":"_25k","4":"_50k", "3":"_100k","2":"_250k", "1": "_1m"},
+    "petro_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/MapServer/0/query",
+    "petro_nome":"cprm_petrogf", 
+    "petro_nums": {"":""},
+    "ocor_data": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/MapServer/0/query",
+    "ocor_nome": "cprm_ocorr_min",
+    "ocor_nums": {"":""}
+
+
+
 }
+
+
+
+
+
