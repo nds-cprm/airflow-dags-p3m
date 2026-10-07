@@ -151,8 +151,8 @@ def ingest_to_gdb(sources: dict, temp_dir: str, out_file: str, **kwargs) -> str:
                     task_logger.info(f"Written layer: {layer_name}")
 
                 except Exception as e:
-                    task_logger.info(f"DAG failed on {file}: {e}")
-                    raise
+                    task_logger.exception(f"DAG failed on {file}: {e}")
+                    raise AirflowException(e)
 
     task_logger.info(f"GDB path: {out_gdb}")
 
