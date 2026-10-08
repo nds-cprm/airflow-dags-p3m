@@ -127,7 +127,8 @@ def ingest_to_gdb(sources: dict, temp_dir: str, out_file: str, **kwargs) -> str:
 
                     else:
                         with zipfile.ZipFile(local_zip) as z:
-                            with z.open(f"{folder}/{file}") as f:
+                            #with z.open(f"{folder}/{file}") as f:
+                            with z.open(f"{file}") as f:
                                 df = pd.read_csv(f, encoding="latin-1", sep=";")
                                 
                                 if 'QTAreaHA' in df.columns:
