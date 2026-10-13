@@ -57,10 +57,10 @@ etl_dag = DAG(
     'p3m_minas_ativas', 
     default_args = {
         "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
-        "email_on_failure": False
+        "email_on_failure": True
     },
-    start_date = datetime(2023, 8, 9),
-    schedule_interval = None, #"0 2 * * 2,4,6",
+    start_date = datetime(2026, 10, 1),
+    schedule_interval = "0 2 * * 2,4,6",
     catchup = False,
     tags=["p3m"]
 )

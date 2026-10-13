@@ -8,11 +8,11 @@ from airflow.providers.http.operators.http import HttpOperator # type: ignore
 cache_camadas_principais = DAG(
     'cache_camadas_principais', 
     default_args = {
-        "email":["asd.asd@asd.asd.br", "asd.asd@asd.asd.br"],
-        "email_on_failure": False
+        "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"],
+        "email_on_failure": True
     },
-    start_date = datetime(2023, 8, 9),
-    schedule_interval = None,
+    start_date = datetime(2023, 10, 1),
+    schedule_interval = None, # Disparado como TriggerDagOperator
     catchup = False,
     tags=["p3m"]
 )

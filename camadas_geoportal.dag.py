@@ -24,8 +24,8 @@ def dag_factory(dag_params:dict) -> DAG:
     """
     """
     default_args = {
-        "email":["abd@def.com"], 
-        "email_on_failure": False,
+        "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], 
+        "email_on_failure": True,
         "email_on_retry": False,
     }
 
@@ -35,7 +35,7 @@ def dag_factory(dag_params:dict) -> DAG:
         '%s_geoportal' % _name, 
         default_args=default_args,
         tags=["p3m", "ESRI"],
-        start_date=datetime(2026, 7, 9), 
+        start_date=datetime(2026, 10, 1), 
         schedule_interval=None, 
         catchup=False,
         template_searchpath='./includes/sql'

@@ -41,11 +41,11 @@ list_header = Variable.get('column_names')#Lista com nome das colunas para nova 
 cfem_dag = DAG (
         'p3m_cfem', 
         default_args = {
-        "email":["gabrielviterbo.ti@fundeec.org.br"],#Alterar em produção
-        "email_on_failure": False
+            "email": ["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], #Alterar em produção
+            "email_on_failure": True
         },
-        start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
+        start_date = datetime(2026, 10, 1),#Ajustar em produção
+        schedule_interval = None, # Disparado como TriggerDagOperator
         catchup = False,
         # template_searchpath = Variable.get('template_searchpath'),
         tags=["p3m"]

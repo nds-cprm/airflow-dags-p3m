@@ -36,12 +36,12 @@ def make_branch(ti):
 gu_dag = DAG (
         'p3m_guia_utilizacao', 
         default_args = {
-        "email":["carlos.mota@sgb.gov.br"],#Alterar em produção
-        "email_on_failure": True
+            "email":["carlos.mota@sgb.gov.br", "amaro.ferreira@sgb.gov.br"], # Alterar em produção
+            "email_on_failure": True
         },
         tags = ['p3m'],
         start_date = datetime(2023, 5, 17),#Ajustar em produção
-        schedule_interval = None, # '0 23 * * *',#Ajustar em produção
+        schedule_interval = None, # Disparado como TriggerDagOperator
         catchup = False,
     #     template_searchpath = Variable.get('template_searchpath')
     )
