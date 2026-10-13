@@ -59,7 +59,6 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
         "TB_ProcessoSubstancia",
         "TB_ProcessoAssociacao",
         "FC_ProcessoTotal"
-
     ]
 
     GDAL_CONFIG_OPTIONS = [
@@ -71,24 +70,38 @@ def gravar_banco(temp_dir, bd_conn, **kwargs):
     for k, v in GDAL_CONFIG_OPTIONS:
         gdal.SetConfigOption(k, v)
 
-    options = gdal.VectorTranslateOptions(
-        format="PostgreSQL",
-        accessMode="append",
-        layers=anm_layers,
-        options=['-preserve_fid'],
-        layerCreationOptions={
-            # "LAUNDER": "NO",
-            "OVERWRITE": "NO"
-        },
-        forceNullable=True,
-        #preserveFID=True,
-    )
+    for layer in anm_layers:
+        options = gdal.VectorTranslateOptions(
+            format="PostgreSQL",
+            accessMode="append",
+            layers=layer,
+            options=['-preserve_fid'],
+            layerCreationOptions={
+                # "LAUNDER": "NO",
+                "OVERWRITE": "NO"
+            },
+            forceNullable=True,
+            #preserveFID=True,
+        )
 
-    gdal.VectorTranslate(
-        out_postgis,   # dst (postgresql)
-        in_gdb,        # src (FileGDB)
-        options=options
-    )
+        try:
+            task_logger.info("Writing layer %s...", layer)
+
+            gdal.VectorTranslate(
+                out_postgis,   # dst (postgresql)
+                in_gdb,        # src (FileGDB)
+                options=options
+            )
+
+            task_logger.info("Layer %s saved on database.", layer)
+        
+        except RuntimeError as e:
+            task_logger.error("Erro na camada [%s]: %s", layer, e)
+            continue
+
+        except Exception as e:
+            task_logger.exception("Erro não especificado [%s]: %s", e.__class__.__name__, e)
+            raise AirflowException(e)
 
     
 def gravar_csv_banco(bd_conn, schema, table, task_name, pk_name, **kwargs):
