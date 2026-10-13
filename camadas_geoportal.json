@@ -1,6 +1,7 @@
 [
     {
         "name": "litoestratigrafia_25000",
+        "schedule": "0 1 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_25000/MapServer/0/query",
         "step": 10000,
         "retries": 3,
@@ -22,6 +23,7 @@
     },
     {
         "name": "litoestratigrafia_50000",
+        "schedule": "0 1 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_50000/MapServer/0/query",
         "step": 10000,
         "retries": 3,
@@ -43,6 +45,7 @@
     },
     {
         "name": "litoestratigrafia_100000",
+        "schedule": "0 2 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_100000/MapServer/0/query",
         "step": 1000,
         "retries": 3,
@@ -64,6 +67,7 @@
     },
     {
         "name": "litoestratigrafia_250000",
+        "schedule": "0 2 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_250000/MapServer/0/query",
         "step": 500,
         "retries": 3,
@@ -85,6 +89,7 @@
     },
     {
         "name": "litoestratigrafia_1000000",
+        "schedule": "0 3 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_1000000/MapServer/0/query",
         "step": 1000,
         "retries": 3,
@@ -106,6 +111,7 @@
     },
     {
         "name": "afloramentos",
+        "schedule": "0 4 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/afloramentos/MapServer/0/query",
         "step": 300000,
         "retries": 3,
@@ -131,6 +137,7 @@
     },
     {
         "name": "geocronologia",
+        "schedule": "0 4 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/geocronologia/MapServer/0/query",
         "step": 300000,
         "retries": 3,
@@ -153,6 +160,7 @@
     },
     {
         "name": "ocorrencias_minerais",
+        "schedule": "0 5 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/MapServer/0/query",
         "step": 100000,
         "retries": 3,
@@ -171,6 +179,7 @@
     },
     {
         "name": "petrografia",
+        "schedule": "0 5 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/petrografia/MapServer/0/query",
         "step": 2000,
         "retries": 3,
@@ -188,6 +197,7 @@
     },
     {
         "name": "mapeamento_geologico_25000",
+        "schedule": "0 6 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/5/query",
         "step": 1000,
         "retries": 3,
@@ -206,6 +216,7 @@
     },
     {
         "name": "mapeamento_geologico_50000",
+        "schedule": "0 6 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/4/query",
         "step": 1000,
         "retries": 3,
@@ -224,6 +235,7 @@
     },
     {
         "name": "mapeamento_geologico_100000",
+        "schedule": "0 6 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/3/query",
         "step": 1000,
         "retries": 3,
@@ -241,6 +253,7 @@
     },
     {
         "name": "mapeamento_geologico_250000",
+        "schedule": "0 6 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/2/query",
         "step": 1000,
         "retries": 3,
@@ -258,6 +271,7 @@
     },
     {
         "name": "mapeamento_geologico_1000000",
+        "schedule": "0 6 1,15 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/sigs_especiais/mapeamento_geologico_brasil_por_escala/MapServer/1/query",
         "step": 1000,
         "retries": 3,
@@ -276,6 +290,7 @@
     },
     {
         "name": "cartas_anomalia",
+        "schedule": "0 0 2,16 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geofisica/cartas_anomalia/MapServer/0/query",
         "step": 1000,
         "retries": 3,
@@ -293,6 +308,7 @@
     },
     {
         "name": "furos_sondagem",
+        "schedule": "0 0 2,16 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/furos_sondagem/MapServer/0/query",
         "step": 1000,
         "retries": 3,
@@ -311,6 +327,7 @@
     },
     {
         "name": "litoestratigrafia_2500000",
+        "schedule": "0 1 2,16 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_2500000/MapServer/0/query",
         "step": 250,
         "retries": 3,
@@ -334,6 +351,7 @@
     },
     {
         "name": "modelamento_3d",
+        "schedule": "0 0 2,16 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/projetos/projetos_3d/MapServer/1/query",
         "step": 1000,
         "retries": 3,
@@ -352,6 +370,7 @@
     },
     {
         "name": "levantamentos_areogeofisicos",
+        "schedule": "0 0 2,16 * *",
         "source": "https://geoportal.sgb.gov.br/server/rest/services/geofisica/aerogeofisica/MapServer/0/query",
         "step": 1000,
         "retries": 3,

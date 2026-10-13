@@ -36,7 +36,7 @@ def dag_factory(dag_params:dict) -> DAG:
         default_args=default_args,
         tags=["p3m", "ESRI"],
         start_date=datetime(2026, 10, 1), 
-        schedule_interval=None, 
+        schedule_interval=dag_params.get("schedule"), 
         catchup=False,
         template_searchpath='./includes/sql'
     ) as dag:
